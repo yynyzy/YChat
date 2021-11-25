@@ -51,15 +51,15 @@
 			this.getFriends()
 		},
 		methods: {
-			changeTime:function(data){
+			changeTime: function(data) {
 				return myfun.dateTime(data)
 			},
 			getFriends: function() {
 				this.friends = datas.getFrinedLists()
-				for(let i =0;i<this.friends.length;i++){
-					this.friends[i].img = "../../static/img/"+this.friends[i].imgurl
+				for (let i = 0; i < this.friends.length; i++) {
+					this.friends[i].img = "../../static/img/" + this.friends[i].imgurl
 				}
-				
+
 				console.log(this.friends)
 			}
 		}
@@ -72,6 +72,7 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		padding-top: var(--status-bar-height);
 	}
 
 	.top-bar {
@@ -82,8 +83,9 @@
 		width: 100%;
 		height: 88rpx;
 		background: #f6e5f5;
-		box-sizing: border-box;
+		// box-sizing: border-box;
 		border-bottom: $uni-border-color;
+		padding-top: var(--status-bar-height);
 		.top-bar-left {
 			float: left;
 			padding-left: $uni-spacing-col-base;
@@ -139,13 +141,16 @@
 	}
 
 	.main {
-		padding: 88rpx $uni-spacing-col-base 0;
-		border: 1px solid red;
+		padding-top: 104rpx;
 	}
 
 	.friend-list {
 		height: 96rpx;
-		padding: 16rpx 0;
+		padding: 16rpx  $uni-spacing-col-base ;
+
+		&:active {
+			background-color: $uni-bg-color-grey;
+		}
 
 		.friend-list-l {
 			position: relative;
