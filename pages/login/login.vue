@@ -12,12 +12,12 @@
 				<view class="title">登录</view>
 				<view class="slogan">您好，欢迎来到 YChat</view>
 				<view class="inputs">
-					<input type="text" class="user" placeholder="用户名/邮箱" placeholder-style="color:#aaa;font-weight:400;"/>
-					<input type="password" class="psw" placeholder="密码"  placeholder-style="color:#aaa;font-weight:400;"/>
+					<input type="text" class="user" placeholder="用户名/邮箱" placeholder-style="color:#aaa;font-weight:400;" @blur="getuser"/>
+					<input type="password" class="psw" placeholder="密码"  placeholder-style="color:#aaa;font-weight:400;" @blur="getpsw"/>
 				</view>
 				<view class="tips">用户名或密码输入错误</view>
 			</view>
-			<view class="submit">登录</view>
+			<view class="submit" @tap="login">登录</view>
 		</view>
 	</view>
 </template>
@@ -26,7 +26,8 @@
 	export default {
 		data() {
 			return {
-
+user:"",
+psw:""
 			};
 		},
 		methods:{
@@ -46,6 +47,17 @@
 				uni.navigateTo({
 					url:"../sign/sign"
 				})
+			},
+			getuser(e){
+				this.user = e.target.value
+			},
+			getpsw(e){
+				this.psw = e.target.value
+			},
+			login(){
+				if(this.user && this.psw){
+					console.log("cg")
+				}
 			}
 		}
 	}
