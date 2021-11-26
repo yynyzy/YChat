@@ -73,6 +73,7 @@
 		align-items: center;
 		justify-content: center;
 		padding-top: var(--status-bar-height);
+		padding-bottom:$uni-spacing-col-base
 	}
 
 	.top-bar {
