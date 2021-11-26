@@ -14,27 +14,26 @@
 
 					<view class="inputs-div">
 						<input type="text" class="user" placeholder="请输入用户名"
-							placeholder-style="color:#aaa;font-weight:400;" />
-						<view class="employ" v-if="employ">已占用</view>
+							placeholder-style="color:#aaa;font-weight:400;" @input="getuser" />
+						<view class="employ" v-if="useremploy">已占用</view>
 						<image src="../../static/sign/right1.png" class="ok" v-if="isuser"></image>
 					</view>
 					<view class="inputs-div">
 						<input type="text" class="email" placeholder="请输入邮箱"
-							placeholder-style="color:#aaa;font-weight:400;" @blur="isEmail" />
-						<view class="employ" v-if="employ">已占用</view>
-						<view class="employ" v-if="invalid">邮箱无效</view>
+							placeholder-style="color:#aaa;font-weight:400;" @input="isEmail" />
+						<view class="employ" v-if="emailemploy">已占用</view>
+						<view class="invalid" v-if="invalid">邮箱无效</view>
 						<image src="../../static/sign/right1.png" class="ok" v-if="isemail"></image>
 					</view>
 					<view class="inputs-div">
 						<input :type="type" class="psw" placeholder="请输入密码"
-							placeholder-style="color:#aaa;font-weight:400;" />
-						<view class="employ" v-if="employ">密码无效</view>
+							placeholder-style="color:#aaa;font-weight:400;" @input="getpsw"/>
 						<image :src="lookurl" class="ok" @tap="looks"></image>
 					</view>
 				</view>
 				<!-- 	<view class="tips">用户名或密码输入错误</view> -->
 			</view>
-			<view class="submit">注册</view>
+			<view :class="[{submit:isok},{submit1:!isok}]">注册</view>
 		</view>
 	</view>
 </template>
@@ -45,12 +44,16 @@
 			return {
 				type: "password",
 				isuser: true,
-				isemail: false,
+				isemail: true,
 				look: true,
 				lookurl: "../../static/sign/look.png",
-				invalid: true,
-				employ: false,
-				email:""
+				invalid: false,
+				useremploy: false,
+				emailemploy: false,
+				email:"",
+				user:"",
+				psw:"",
+				isok:false
 			};
 		},
 		methods: {
@@ -67,14 +70,32 @@
 			},
 			isEmail(e) {
 				const reg = /^[A-Za-zd0-9]+([-_.][A-Za-zd]+)*@([A-Za-zd]+[-.])+[A-Za-zd]{2,5}$/
-				this.email = e.target.value
+				this.email = e.detail.value
 				if (this.email.length) {
 					if (reg.test(this.email)) {
+						this.isemail=true
 						this.invalid = false
 					} else {
+						this.isemail=false
 						this.invalid = true
 					}
 
+				}
+				this.isOk()
+			},
+			getuser(e){
+				this.user =e.detail.value
+				this.isOk()
+			},
+			getpsw(e){
+				this.psw =e.detail.value
+				this.isOk()
+			},
+			isOk(){
+				if(this.isuser&& this.isemail &&this.psw.length>5){
+					this.isok = true
+				}else{
+					this.isok = false
 				}
 			},
 			toLogin(){
@@ -195,6 +216,18 @@
 		font-size: $uni-font-size-lg;
 		font-weight: 500;
 		color: $uni-text-color;
+		line-height: 96rpx;
+		text-align: center;
+	}
+	.submit1 {
+		margin: 0 auto;
+		width: 520rpx;
+		height: 96rpx;
+		background:rgba(39,40,50,0.2);
+		border-radius: 48rpx;
+		font-size: $uni-font-size-lg;
+		font-weight: 500;
+		color: $uni-text-color-inverse;
 		line-height: 96rpx;
 		text-align: center;
 	}

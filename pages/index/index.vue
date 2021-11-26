@@ -67,6 +67,8 @@
 </script>
 
 曰<style lang="scss">
+	@import "../../commons/css/mycss.scss";
+	
 	.content {
 		display: flex;
 		flex-direction: column;
@@ -76,70 +78,7 @@
 		padding-bottom:$uni-spacing-col-base
 	}
 
-	.top-bar {
-		position: fixed;
-		z-index: 1000;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 88rpx;
-		background: #f6e5f5;
-		// box-sizing: border-box;
-		border-bottom: $uni-border-color;
-		padding-top: var(--status-bar-height);
-		.top-bar-left {
-			float: left;
-			padding-left: $uni-spacing-col-base;
-
-			image {
-				margin-top: 10rpx;
-				width: 68rpx;
-				height: 68rpx;
-				border-radius: 16rpx;
-			}
-		}
-
-		.top-bar-center {
-			position: absolute;
-			text-align: center;
-			left: 0;
-			right: 0;
-			top: 0;
-			bottom: 0;
-			margin: auto;
-
-			.logo {
-				padding-top: 19rpx;
-				width: 88rpx;
-				height: 42rpx;
-			}
-
-			.title {}
-		}
-
-		.top-bar-right {
-			float: right;
-			padding-right: 14rpx;
-
-			.search {
-				width: 88rpx;
-				height: 88rpx;
-				display: inline-block;
-			}
-
-			.add {
-				width: 88rpx;
-				height: 88rpx;
-				display: inline-block;
-			}
-
-			image {
-				padding: 18rpx 0 0 18rpx;
-				width: 52rpx;
-				height: 52rpx;
-			}
-		}
-	}
+	
 
 	.main {
 		padding-top: 104rpx;
