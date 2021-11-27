@@ -34,7 +34,7 @@
 				加为好友
 			</view>
 		</view>
-		<view class="add-misg" :style="{height:addHeight+"px"}">
+		<view class="add-misg" :style="{height:addHeight+'px'}">
 			<view class="name">
 				{{user.name}}
 			</view>
@@ -208,7 +208,7 @@
 		border-radius: 40rpx 40rpx 0 0;
 
 		.name {
-			padding-top: 168rpx 0 40rpx;
+			padding: 168rpx 0 40rpx;
 			font-size: 52rpx;
 			color: $uni-text-color;
 			line-height: 74rpx;
@@ -238,7 +238,6 @@
 		display: flex;
 
 		.close {
-			// flex: auto;
 			width: 172rpx;
 			text-align: center;
 			line-height: 80rpx;
