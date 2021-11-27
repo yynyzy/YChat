@@ -64,33 +64,8 @@ psw:""
 </script>
 
 <style lang="scss">
-	.content {
-		padding-bottom: var(--status-bar-height);
-	}
+	@import "../../commons/css/mycss.scss";
 
-	.top-bar {
-		position: fixed;
-		z-index: 1001;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 88rpx;
-		padding-top: var(--status-bar-height);
-		background: $uni-bg-color;
-		// box-sizing: border-box;
-
-		.top-bar-right {
-			float: right;
-			padding-right: 32rpx;
-			.text{
-				font-size: $uni-font-size-lg;
-				font-weight: 500;
-				color: $uni-text-color;
-				line-height: 88rpx;
-			}
-		}
-
-	}
 	.logo{
 		text-align: center;
 		image {

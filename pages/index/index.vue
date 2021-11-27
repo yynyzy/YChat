@@ -8,7 +8,7 @@
 				<image class="logo" src="../../static/index/logo.png"></image>
 			</view>
 			<view class="top-bar-right">
-				<view class="search">
+				<view class="search" @tap="toSearch">
 					<image src="../../static/index/search.png"></image>
 				</view>
 				<view class="add">
@@ -21,7 +21,7 @@
 			<view class="friends">
 				<view class="friend-list" v-for="(item,index) in friends" :key="item.id">
 					<view class="friend-list-l">
-						<text class="tip">{{item.tip}}</text>
+						<text class="tip" v-if="item.tip>0">{{item.tip<99?item.tip:"99+"}}</text>
 						<image :src="item.img"></image>
 					</view>
 					<view class="friend-list-r">
@@ -59,8 +59,12 @@
 				for (let i = 0; i < this.friends.length; i++) {
 					this.friends[i].img = "../../static/img/" + this.friends[i].imgurl
 				}
-
-				console.log(this.friends)
+				// console.log(this.friends)
+			},
+			toSearch:function(){
+				uni.navigateTo({
+					url:"../search/search"
+				})
 			}
 		}
 	}
@@ -68,20 +72,9 @@
 
 曰<style lang="scss">
 	@import "../../commons/css/mycss.scss";
-	
-	.content {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding-top: var(--status-bar-height);
-		padding-bottom:$uni-spacing-col-base
-	}
-
-	
-
 	.main {
 		padding-top: 104rpx;
+		padding-bottom:$uni-spacing-col-base
 	}
 
 	.friend-list {

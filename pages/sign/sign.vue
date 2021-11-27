@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<view class="top-bar">
-			<view class="top-bar-left" @tap="toLogin()">
+			<view class="top-bar-left" @tap="back()">
 				<image src="../../static/common/back.png" class="back-img"></image>
 			</view>
 	</view>
@@ -98,7 +98,7 @@
 					this.isok = false
 				}
 			},
-			toLogin(){
+			back(){
 				uni.navigateBack({
 					detail:1
 				})
@@ -107,35 +107,7 @@
 </script>
 
 <style lang="scss">
-	.content {
-		padding-bottom: var(--status-bar-height);
-	}
-
-	.top-bar {
-		position: fixed;
-		z-index: 1001;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 88rpx;
-		padding-top: var(--status-bar-height);
-		background: $uni-bg-color;
-
-		.top-bar-left {
-			float: left;
-			padding-left: 32rpx;
-			width: 88rpx;
-			height: 88rpx;
-
-			.back-img {
-				margin-top: 21rpx;
-				width: 26rpx;
-				height: 46rpx;
-
-			}
-		}
-
-	}
+		@import "../../commons/css/mycss.scss";
 
 	.logo {
 		text-align: center;
