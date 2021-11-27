@@ -77,5 +77,14 @@
 				width: 52rpx;
 				height: 52rpx;
 			}
+			.more-img{
+				padding-top: 10rpx;
+				height: 88rpx;
+				padding-right: $uni-spacing-col-base;
+				image{
+					width: 52rpx;
+					height: 12rpx;
+				}
+			}
 		}
 	}
