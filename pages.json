@@ -8,9 +8,8 @@
 		}, {
 			"path": "pages/login/login",
 			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
+				"navigationStyle": "custom"
+
 			}
 
 		}
@@ -18,8 +17,7 @@
             "path" : "pages/sign/sign",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "",
-                "enablePullDownRefresh": false
+				"navigationStyle": "custom"
             }
             
         }
@@ -27,8 +25,7 @@
             "path" : "pages/search/search",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "",
-                "enablePullDownRefresh": false
+				"navigationStyle": "custom"
             }
             
         }
@@ -36,8 +33,7 @@
             "path" : "pages/userHome/userHome",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "",
-                "enablePullDownRefresh": false
+				"navigationStyle": "custom"
             }
             
         }
