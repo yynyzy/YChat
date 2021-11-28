@@ -14,7 +14,9 @@
 			<view class="search-user result">
 				<view class="title" v-if="userarr.length>0">用户</view>
 				<view class="list user" v-for="(item,index) in userarr" :key="index">
+					<navigator url="../userHome/userHome?id=aaa" hover-class="none">
 					<image :src="item.imgurl"></image>
+					</navigator>
 					<view class=" names">
 						<view class="name" v-html="item.name"></view>
 						<view class="email" v-html="item.email"></view>

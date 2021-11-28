@@ -12,14 +12,14 @@
 			</view>
 		</view>
 		<view class="bg">
-			<view class="bg-bai">
+			<view class="bg-bai" :animation="animationData4">
 				<image src="../../static/img/three.png" class="bg-img" mode="aspectFill"></image>
 			</view>
 		</view>
 		<view class="main">
 			<view class="user-header">
 				<view class="sex" :style="{background:sexBg}" :animation="animationData3">
-					<image src="../../static/userhome/female.png" ></image>
+					<image src="../../static/userhome/female.png"></image>
 				</view>
 				<image src="../../static/img/three.png" class="user-img" mode="aspectFill" :animation="animationData2">
 				</image>
@@ -31,7 +31,7 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn" @tap="addFriendAnimation">
+			<view class="bottom-btn btn1" @tap="addFriendAnimation">
 				加为好友
 			</view>
 		</view>
@@ -63,6 +63,7 @@
 				animationData1: {},
 				animationData2: {},
 				animationData3: {},
+				animationData4: {},
 				isAdd: false,
 				user: {
 					name: "致远",
@@ -106,21 +107,28 @@
 					duration: 300,
 					timingFunction: "ease"
 				})
+				var animation4 = uni.createAnimation({
+					duration: 300,
+					timingFunction: "ease"
+				})
 				if (this.isAdd) {
 					animation.bottom(0).step()
 					animation1.bottom(0).step()
-					animation2.width(120).height(120).top(40).step()
+					animation2.width(120).height(120).step()
 					animation3.opacity(0).step()
+					animation4.backgroundColor('rgba(255,228,49,0.6)').step()
 				} else {
 					animation.bottom(-this.addHeight).step()
 					animation1.bottom(-100).step()
 					animation2.width(200).height(200).top(0).step()
 					animation3.opacity(1).step()
+					animation4.backgroundColor('rgba(255,228,49,0)').step()
 				}
 				this.animationData = animation.export()
 				this.animationData1 = animation1.export()
 				this.animationData2 = animation2.export()
 				this.animationData3 = animation3.export()
+				this.animationData4 = animation4.export()
 			}
 		}
 	}
@@ -158,7 +166,7 @@
 
 	.main {
 		text-align: center;
-		padding-top: 148rpx;
+		padding-top: 240rpx;
 
 		.user-header {
 			margin: 0 auto;
@@ -218,26 +226,14 @@
 
 
 	}
-
-	.bottom-bar {
-		position: fixed;
-		bottom: 0;
-		width: 100%;
-		height: 104rpx;
-		box-sizing: border-box;
-		padding: 12rpx $uni-spacing-col-base;
-
-		.bottom-btn {
-
-			text-align: center;
-			line-height: 80rpx;
-			font-size: $uni-font-size-lg;
-			color: $uni-text-color;
-			height: 80rpx;
+	.bottom-bar{
+		.bottom-btn{
 			background: $uni-color-primary;
-			border-radius: $uni-border-radius-sm;
+			margin: 0 $uni-spacing-col-base;
 		}
 	}
+
+	
 
 	.add-misg {
 		position: fixed;

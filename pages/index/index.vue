@@ -1,9 +1,9 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view class="top-bar-left">
-				<image src="../../static/img/four.png"></image>
-			</view>
+			<navigator url="../userHome/userHome?id=aaa" hover-class="none" class="top-bar-left">
+				<image src="../../static/img/four.png" class="my-img"></image>
+			</navigator>
 			<view class="top-bar-center">
 				<image class="logo" src="../../static/index/logo.png"></image>
 			</view>
