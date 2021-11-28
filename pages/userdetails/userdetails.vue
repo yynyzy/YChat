@@ -27,12 +27,12 @@
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
 				</view>
-				<view class="row">
+				<view class="row" @tap="modify('签名',dataArr.sign,false)" :animation="animationData">
 					<view class="title">
 						签名
 					</view>
 					<view class="cont">
-						一个大大就是那里拿到了卡死你都看到了看来你打没打开了吗
+						{{dataArr.sign}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
@@ -43,18 +43,17 @@
 						注册
 					</view>
 					<view class="cont">
-						2020-10-11 23:23:10
+						{{timeChange(dataArr.zhuce)}}
 					</view>
 				</view>
 			</view>
-
 			<view class="column">
-				<view class="row">
+				<view class="row" @tap="modify('昵称',dataArr.name,false)">
 					<view class="title">
 						昵称
 					</view>
 					<view class="cont">
-						严致远
+						{{dataArr.name}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
@@ -93,7 +92,7 @@
 						电话
 					</view>
 					<view class="cont">
-						13818944586
+						{{dataArr.tell}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
@@ -104,7 +103,7 @@
 						邮箱
 					</view>
 					<view class="cont">
-						1601530253@qq.com
+						{{dataArr.email}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
@@ -126,21 +125,21 @@
 				退出应用
 			</view>
 		</view>
-		<view class="modify">
+		<view class="modify" :style="{bottom:-+widHeight+'px'}" :animation="animationData">
 			<view class="modify-header">
-				<view class="close">
+				<view class="close" @tap="modify()">
 					取消
 				</view>
 				<view class="title">
 					签名
 				</view>
-				<view class="define">
+				<view class="define" @tap="modifySubmit()">
 					确定
 				</view>
 			</view>
 			<view class="modify-main">
 				<input type="text" v-model="pwd" class="modify-pwd" placeholder="请输入原密码"
-							placeholder-style="color:#aaa;font-weight:400;" />
+					placeholder-style="color:#aaa;font-weight:400;" v-show="isPwd" />
 				<textarea v-model="data" class="modify-content" />
 			</view>
 		</view>
@@ -149,6 +148,7 @@
 
 <script>
 	import ImageCropper from "@/components/ling-imgcropper/ling-imgcropper.vue";
+	import myFun from "../../commons/js/myfun.js"
 	export default {
 		components: {
 			ImageCropper,
@@ -158,14 +158,27 @@
 				format: true
 			})
 			return {
+				dataArr:{
+					name:"小明",
+					sign:"加油努力姐姐哈哈哈哈哈啊啊啊啊啊啊啊",
+					zhuce:new Date(),
+					sex:"男",
+					birth:"1998-04-12",
+					tell:'12345678978',
+					email:"1601530255@qq.com"
+				},
+				modifyType:"",
 				cropFilePath: "../../static/img/three.png",
 				array: ["男", "女", "未知"],
 				index: 0,
 				date: currentDate,
 				tempFilePath: '',
 				data: "修改的内容",
-				animationData:{},
-				isModify:false
+				animationData: {},
+				isModify: false,
+				pwd: "",
+				widHeight: "",
+				isPwd:false
 			}
 		},
 		computed: {
@@ -176,11 +189,17 @@
 				return this.getDate('end');
 			}
 		},
+		onReady() {
+			this.getElementStyle()
+		},
 		methods: {
 			backOne() {
 				uni.navigateBack({
 					detail: 1
 				})
+			},
+			timeChange(date){
+				return myFun.detailTime(date)
 			},
 			bindPickerChange: function(e) {
 				console.log('picker发送选择改变，携带值为', e.target.value)
@@ -227,7 +246,6 @@
 						var backstr = uploadFileRes.data;
 						//自定义操作
 					},
-
 					fail(e) {
 						console.log("this is errormes " + e.message);
 					},
@@ -235,13 +253,41 @@
 			},
 			cancel() {
 				console.log('canceled')
-			}
-			
-			isModify(){
-				
-			}
+			},
+			getElementStyle() {
+				const query = uni.createSelectorQuery().in(this);
+				query.select('.modify').boundingClientRect(data => {
+					console.log("得到布局位置信息" + JSON.stringify(data));
+					console.log("节点离页面顶部的距离为" + data.top);
+					this.widHeight = data.height
+					console.log(this.widHeight)
+				}).exec();
+			},
+			modify(type,data,isPwd) {
+				this.modifyType = type
+				this.data = data
+				this.isPwd = isPwd
+				this.isModify = !this.isModify
+				var animation = uni.createAnimation({
+					duration: 300,
+					timingFunction: "ease"
+				})
+				if (this.isModify) {
+					animation.bottom(0).step()
+				} else {
+					animation.bottom(-this.widHeight).step()
 
+				}
+				this.animationData = animation.export()
+
+			},
+			modifySubmit() {
+				this.modify()
+			}
 		}
+
+
+
 	}
 </script>
 
@@ -263,7 +309,6 @@
 			padding-top: 12rpx;
 			width: 100%;
 			// border-bottom: 1px solid $uni-border-color;
-
 			.heads {}
 
 			.row {
@@ -323,7 +368,7 @@
 	}
 
 	.btn2 {
-		margin-top: 70rpx;
+		margin-top: 130rpx;
 		text-align: center;
 		font-size: $uni-font-size-lg;
 		color: $uni-color-warning;
@@ -333,7 +378,7 @@
 	.modify {
 		position: fixed;
 		z-index: 1003;
-		top: 0;
+		// top: 0;
 		left: 0;
 		height: 100%;
 		width: 100%;
@@ -370,32 +415,35 @@
 				line-height: 44px;
 			}
 		}
-	.modify-main{
-		display: flex;
-		padding: $uni-spacing-col-base;
-		flex-direction: column;
-		.modify-pwd{
-			padding: 0 20rpx;
-			margin-bottom: $uni-spacing-col-base;
-			height: 88rpx;
-			background: $uni-bg-color-grey;
-			border-radius: $uni-border-radius-base;
-			font-size: $uni-font-size-lg;
-			color: $uni-text-color;
-			line-height: 88rpx;
+
+		.modify-main {
+			display: flex;
+			padding: $uni-spacing-col-base;
+			flex-direction: column;
+
+			.modify-pwd {
+				padding: 0 20rpx;
+				margin-bottom: $uni-spacing-col-base;
+				height: 88rpx;
+				background: $uni-bg-color-grey;
+				border-radius: $uni-border-radius-base;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color;
+				line-height: 88rpx;
+			}
+
+			.modify-content {
+				padding: 16rpx 20rpx;
+				flex: auto;
+				width: 100%;
+				box-sizing: border-box;
+				height: 386px;
+				background: $uni-bg-color-grey;
+				border-radius: $uni-border-radius-base;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color;
+				line-height: 44rpx;
+			}
 		}
-		.modify-content{
-			padding: 16rpx 20rpx;
-			flex: auto;
-			width: 100%;
-			box-sizing: border-box;
-			height: 386px;
-			background: $uni-bg-color-grey;
-			border-radius: $uni-border-radius-base;
-			font-size: $uni-font-size-lg;
-			color: $uni-text-color;
-			line-height: 44rpx;
-		}
-	}
 	}
 </style>
