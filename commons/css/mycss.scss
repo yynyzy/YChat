@@ -9,7 +9,6 @@
 		left: 0;
 		width: 100%;
 		height: 88rpx;
-		border-bottom:1px solid $uni-border-color;
 		padding-top: var(--status-bar-height);
 		.top-bar-left {
 			float: left;
@@ -36,7 +35,7 @@
 			top: 0;
 			bottom: 0;
 			margin: auto;
-text-align: center;
+			text-align: center;
 			.logo {
 				padding-top: 19rpx;
 				width: 88rpx;
@@ -53,9 +52,9 @@ text-align: center;
 		.top-bar-right {
 			float: right;
 			padding-right: 14rpx;
-.pice{
-	width: 88rpx;
-}
+			.pice{
+			width: 88rpx;
+			}
 			.search {
 				width: 88rpx;
 				height: 88rpx;

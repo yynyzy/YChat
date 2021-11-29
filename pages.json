@@ -41,6 +41,17 @@
             "path" : "pages/userdetails/userdetails",
             "style" :                                                                                    
             {
+				"navigationStyle": "custom",
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/friendRequest/friendRequest",
+            "style" :                                                                                    
+            {
+				"navigationStyle": "custom",
                 "navigationBarTitleText": "",
                 "enablePullDownRefresh": false
             }

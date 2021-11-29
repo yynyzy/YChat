@@ -299,7 +299,7 @@
 	}
 
 	.main {
-		padding-top: 28rpx;
+		padding-top: 130rpx;
 		// display: flex;
 		// flex-direction: column;
 

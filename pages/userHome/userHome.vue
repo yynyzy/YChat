@@ -25,7 +25,7 @@
 				</image>
 			</view>
 			<view class="user-imf">
-				<view class="name">{{user.name}}</view>
+				<view class="name" >{{user.name}}</view>
 				<view class="nick">昵称：{{user.nick}}</view>
 				<view class="intr">{{user.intr}}</view>
 			</view>

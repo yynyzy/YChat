@@ -61,9 +61,9 @@
 				}
 				// console.log(this.friends)
 			},
-			toSearch:function(){
+			toSearch: function() {
 				uni.navigateTo({
-					url:"../search/search"
+					url: "../search/search"
 				})
 			}
 		}
@@ -72,14 +72,21 @@
 
 曰<style lang="scss">
 	@import "../../commons/css/mycss.scss";
+
+	.top-bar {
+	background: rgba(255, 255, 255, 0.96);	
+		border-bottom:1px solid $uni-border-color;
+
+	}
+
 	.main {
 		padding-top: 104rpx;
-		padding-bottom:$uni-spacing-col-base
+		padding-bottom: $uni-spacing-col-base
 	}
 
 	.friend-list {
 		height: 96rpx;
-		padding: 16rpx  $uni-spacing-col-base ;
+		padding: 16rpx $uni-spacing-col-base;
 
 		&:active {
 			background-color: $uni-bg-color-grey;
