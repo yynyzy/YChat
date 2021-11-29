@@ -19,29 +19,28 @@
 		</view>
 		<scroll-view scroll-y="true" class="chat" scroll-with-animation="true">
 			<view class="chat-main">
-				<view class="chat-ls">
+				<view class="chat-ls" v-for="(item,index) in msgs" :key="index">
 					<view class="chat-time">
-						12:32
+					{{changeTime(item.time)}}
 					</view>
-					<view class="msg-m msg-left">
-						<image src="../../static/img/four.png" class="user-img"></image>
-						<view class="message">
-							<view class="msg-text">
-								你好啊，我的朋友，多日不见，甚是想念。
+					<view class="msg-m msg-left" v-if="item.id !='b'">
+						<image :src="item.imgurl" class="user-img"></image>
+						<view class="message" v-if="item.types==0">
+							<view class="msg-text" >
+									{{item.message}}
 							</view>
-
 						</view>
+						<view class="message"  v-if="item.types==1">
+							<image :src="item.message" ></image>
+						</view>
+							
+						
 					</view>
-				</view>
-				<view class="chat-ls">
-					<view class="chat-time">
-						12:32
-					</view>
-					<view class="msg-m msg-right">
-						<image src="../../static/img/one.png" class="user-img"></image>
+					<view class="msg-m msg-right" v-if="item.id =='b'">
+						<image :src="item.imgurl"  class="user-img"></image>
 						<view class="message">
 							<view class="msg-text">
-								我也是啊，朋友。你好啊，我的朋友，多日不见，甚是想念。
+								{{item.message}}
 							</view>
 						</view>
 					</view>
@@ -57,8 +56,11 @@
 	export default {
 		data() {
 			return {
-				msg: []
+				msgs: []
 			}
+		},
+		onLoad() {
+			this.getMsg()
 		},
 		methods: {
 			backOne() {
@@ -66,6 +68,21 @@
 					detail: 1
 				})
 			},
+			changeTime(date){
+				return myfun.dateTime(date)
+			},
+			getMsg(){
+				let msg = datas.message()
+				for(let i =0;i<msg.length;i++){
+					msg[i].imgurl='../../static/img/'+msg[i].imgurl
+					
+					if(msg[i].types==1){
+						msg[i].message='../../static/img/'+msg[i].message
+					}
+					this.msgs.unshift(msg[i])
+				}
+			console.log(msg)
+			}
 		}
 	}
 </script>
