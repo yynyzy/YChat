@@ -102,6 +102,47 @@ export default {
 			friend: 8
 		}]
 		return isfriend
+	},
+	message:function(){
+		let msgs=[
+			{
+				id: 'a',
+				imgurl: 'one.png',
+				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
+				tip: 0,
+				types:0,
+				// name: "大海",
+				time: new Date()-1000
+			},
+			{
+				id: 'a',
+				imgurl: 'one.png',
+				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
+				tip: 0,
+				types:0,
+				// name: "大海",
+				time: new Date()-1000
+			},
+			{
+				id: 'b',
+				imgurl: 'two.png',
+				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
+				tip: 1,
+				types:0,
+				// name: "大海",
+				time: new Date()-1000*16
+			},
+			{
+				id: 'c',
+				imgurl: 'three.png',
+				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
+				tip: 2,
+				types:0,
+				// name: "大海",
+				time: new Date()-1000*32
+			}
+		]
+		return msgs
 	}
 
 }
