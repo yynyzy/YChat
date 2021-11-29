@@ -31,17 +31,18 @@
 							</view>
 						</view>
 						<view class="message"  v-if="item.types==1">
-							<image :src="item.message" ></image>
+							<image :src="item.message" mode="widthFix" class="msg-img"></image>
 						</view>
-							
-						
 					</view>
 					<view class="msg-m msg-right" v-if="item.id =='b'">
 						<image :src="item.imgurl"  class="user-img"></image>
-						<view class="message">
-							<view class="msg-text">
-								{{item.message}}
+						<view class="message" v-if="item.types==0">
+							<view class="msg-text" >
+									{{item.message}}
 							</view>
+						</view>
+						<view class="message"  v-if="item.types==1">
+							<image :src="item.message" mode="widthFix" class="msg-img"></image>
 						</view>
 					</view>
 				</view>
@@ -164,6 +165,10 @@
 					line-height: 44rpx;
 					padding: 18rpx 24rpx;
 				}
+				.msg-img{
+					max-width: 400rpx;
+				border-radius: $uni-border-radius-base;
+				}
 			}
 
 			.msg-left {
@@ -174,6 +179,9 @@
 					background-color: #fff;
 					border-radius: 0rpx 20rpx 20rpx 20rpx;
 				}
+				.msg-img{
+					margin-left: 16rpx;
+				}
 			}
 
 			.msg-right {
@@ -183,6 +191,9 @@
 					margin-right: 16rpx;
 					background-color: #fff260;
 					border-radius: 20rpx 0rpx 20rpx 20rpx;
+				}
+				.msg-img{
+				margin-right: 16rpx;
 				}
 			}
 		}
