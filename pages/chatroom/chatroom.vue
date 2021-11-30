@@ -23,6 +23,7 @@
 					<view class="chat-time" v-if="item.time !==''">
 						{{changeTime(item.time)}}
 					</view>
+					<!-- 对方 -->
 					<view class="msg-m msg-left" v-if="item.id !='b'">
 						<image :src="item.imgurl" class="user-img"></image>
 						<view class="message" v-if="item.types==0">
@@ -33,7 +34,15 @@
 						<view class="message" v-if="item.types==1">
 							<image :src="item.message" mode="widthFix" class="msg-img" @tap="previewImage"></image>
 						</view>
+						<!-- 音频 -->
+						<view class="message" v-if="item.types==2">
+							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}">
+								{{item.message.time}}
+								<image src="../../static/submit/yy.png" class="voice-img"></image>
+							</view>
+						</view>
 					</view>
+					<!-- 我 -->
 					<view class="msg-m msg-right" v-if="item.id =='b'">
 						<image :src="item.imgurl" class="user-img"></image>
 						<view class="message" v-if="item.types==0">
@@ -45,12 +54,16 @@
 							<image :src="item.message" mode="widthFix" class="msg-img"
 								@tap="previewImage(item.message)"></image>
 						</view>
+						<!-- 音频 -->
+						<view class="message" v-if="item.types==2">
+							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}">
+								{{item.message.time}}
+								<image src="../../static/submit/yy.png" class="voice-img"></image>
+							</view>
+						</view>
 					</view>
 				</view>
 			</view>
-		<!-- 	<view class="padbt">
-
-			</view> -->
 		</scroll-view>
 		<submit @inputs="inputs" @heights="heights"></submit>
 	</view>
@@ -142,15 +155,17 @@
 					imgurl: '../../static/img/one.png',
 					message:e.message,
 					tip: len,
-					types:e.type,
+					types:e.types,
 					time: new Date
 				}
 				console.log(e)
 				this.msgs.push(data)
 				this.$nextTick(function() {
 					this.scrollToView = 'msg' + len
-					console.log(this.scrollToView)
 				})
+				if (e.types == 1) {
+					this.imgMsg.push(e.message)
+				}
 			}
 			
 		}
@@ -243,6 +258,14 @@
 					max-width: 400rpx;
 					border-radius: $uni-border-radius-base;
 				}
+				.voice{
+					min-width: 80rpx;
+					max-width: 400rpx;
+				}
+				.voice-img{
+					width: 28rpx;
+					height: 36rpx;
+				}
 			}
 
 			.msg-left {
@@ -257,6 +280,16 @@
 				.msg-img {
 					margin-left: 16rpx;
 				}
+				.voice{
+					text-align: right;
+				}
+				.voice-img{
+					float: left;
+					transform: rotate (180deg);
+					width: 28rpx;
+					height: 36rpx;
+					padding-bottom: 4rpx;
+				}
 			}
 
 			.msg-right {
@@ -270,6 +303,15 @@
 
 				.msg-img {
 					margin-right: 16rpx;
+				}
+				.voice{
+					text-align: left;
+				}
+				.voice-img{
+					float: right;
+					width: 28rpx;
+					height: 36rpx;
+					padding-top: 4rpx;
 				}
 			}
 		}

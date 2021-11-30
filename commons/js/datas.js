@@ -108,11 +108,34 @@ export default {
 			{
 				id: 'a',
 				imgurl: 'one.png',
+				message:{
+					voice:'b',
+					time:20
+				},
+				tip: 5,
+				types:2,
+				time: new Date()
+			},
+			{
+				id: 'b',
+				imgurl: 'three.png',
+				message:{
+					voice:'a',
+					time:60
+				},
+				tip: 6,
+				types:2,
+				time: new Date()
+			},
+			{
+				id: 'a',
+				imgurl: 'one.png',
 				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
 				tip: 0,
 				types:0,
 				time: new Date()-1000
 			},
+			
 			{
 				id: 'a',
 				imgurl: 'one.png',
@@ -144,8 +167,9 @@ export default {
 				message:"four.png",
 				tip: 4,
 				types:1,
-				time: new Date()-10000000*50
+				time: new Date()-10000*50
 			}
+			
 		]
 		return msgs
 	}
