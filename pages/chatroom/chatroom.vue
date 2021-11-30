@@ -17,10 +17,10 @@
 				</view>
 			</view>
 		</view>
-		<scroll-view scroll-y="true" class="chat" scroll-with-animation="true">
+		<scroll-view scroll-y="true" class="chat" scroll-with-animation="true" :scroll-into-view="scrollToView">
 			<view class="chat-main">
-				<view class="chat-ls" v-for="(item,index) in msgs" :key="index">
-					<view class="chat-time">
+				<view class="chat-ls" v-for="(item,index) in msgs" :key="index" :id ="'msg'+ item.tip">
+					<view class="chat-time" v-if="item.time !==''">
 					{{changeTime(item.time)}}
 					</view>
 					<view class="msg-m msg-left" v-if="item.id !='b'">
@@ -31,7 +31,7 @@
 							</view>
 						</view>
 						<view class="message"  v-if="item.types==1">
-							<image :src="item.message" mode="widthFix" class="msg-img"></image>
+							<image :src="item.message" mode="widthFix" class="msg-img" @tap="previewImage"></image>
 						</view>
 					</view>
 					<view class="msg-m msg-right" v-if="item.id =='b'">
@@ -42,26 +42,38 @@
 							</view>
 						</view>
 						<view class="message"  v-if="item.types==1">
-							<image :src="item.message" mode="widthFix" class="msg-img"></image>
+							<image :src="item.message" mode="widthFix" class="msg-img" @tap="previewImage(item.message)"></image>
 						</view>
 					</view>
 				</view>
 			</view>
+			<view class="padbt">
+				
+			</view>
 		</scroll-view>
+		<submit></submit>
 	</view>
 </template>
 
 <script>
 	import datas from "../../commons/js/datas.js"
 	import myfun from "../../commons/js/myfun.js"
+	
+	import submit from "../../components/submit/submit.vue"
 	export default {
 		data() {
 			return {
-				msgs: []
+				msgs: [],
+				imgMsg:[],
+				oldTime:new Date(),
+				scrollToView:''
 			}
 		},
 		onLoad() {
 			this.getMsg()
+		},
+		comments:{
+			submit
 		},
 		methods: {
 			backOne() {
@@ -70,19 +82,44 @@
 				})
 			},
 			changeTime(date){
-				return myfun.dateTime(date)
+				return myfun.dateTime1(date)
 			},
 			getMsg(){
 				let msg = datas.message()
 				for(let i =0;i<msg.length;i++){
 					msg[i].imgurl='../../static/img/'+msg[i].imgurl
-					
+					if(i<msg.length-1){
+						let t =myfun.spaceTime(this.oldTime,msg[i].time)
+						if(t){
+							this.oldTime =t
+						}
+						msg[i].time =t
+					}
 					if(msg[i].types==1){
 						msg[i].message='../../static/img/'+msg[i].message
+						this.imgMsg.unshift(msg[i].message)
 					}
 					this.msgs.unshift(msg[i])
 				}
-			console.log(msg)
+				this.$nextTick(function(){
+					let len = this.msgs.length
+					this.scrollToView='msg'+this.msgs[len-1].tip
+				})
+			},
+			previewImage(currentUrl){
+				uni.previewImage({
+					current:currentUrl,
+				           urls: this.imgMsg,
+				           longPressActions: {
+				               itemList: ['发送给朋友', '保存图片', '收藏'],
+				               success: function(data) {
+				                   console.log('选中了第' + (data.tapIndex + 1) + '个按钮,第' + (data.index + 1) + '张图片');
+				               },
+				               fail: function(err) {
+				                   console.log(err.errMsg);
+				               }
+				           }
+				       });
 			}
 		}
 	}
@@ -123,7 +160,10 @@
 
 	.chat {
 		height: 100%;
-
+.padbt{
+	height: var(--status-bar-height);
+	width: 100%;
+}
 		.chat-main {
 			padding-left: $uni-spacing-col-base;
 			padding-right: $uni-spacing-col-base;

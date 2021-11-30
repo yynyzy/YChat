@@ -111,35 +111,40 @@ export default {
 				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
 				tip: 0,
 				types:0,
-				// name: "大海",
 				time: new Date()-1000
 			},
 			{
 				id: 'a',
 				imgurl: 'one.png',
 				message:"TOP常常遇到文章标题列表布局排版时候,有的标题比较长显示不完,这个时候即又不想换行...",
-				tip: 0,
+				tip: 1,
 				types:0,
-				// name: "大海",
+
 				time: new Date()-1000*16
 			},
 			{
 				id: 'b',
 				imgurl: 'three.png',
 				message:"one.png",
-				tip: 1,
+				tip: 2,
 				types:1,
-				// name: "大海",
 				time: new Date()-1000*32
 			},
 			{
 				id: 'b',
 				imgurl: 'three.png',
 				message:"three.png",
-				tip: 1,
+				tip: 3,
 				types:1,
-				// name: "大海",
-				time: new Date()-1000*48
+				time: new Date()-10000000*50
+			},
+			{
+				id: 'a',
+				imgurl: 'one.png',
+				message:"four.png",
+				tip: 4,
+				types:1,
+				time: new Date()-10000000*50
 			}
 		]
 		return msgs
