@@ -5,15 +5,15 @@
 				<view class="bt-img" @tap="records">
 					<image :src="toc"></image>
 				</view>
-				<textarea auto-height="true" class="chat-send btn" :class="{displaynone:isrecord}" />
+				<textarea auto-height="true" class="chat-send btn" :class="{displaynone:isrecord}" @input="inputs" v-model="msg"/>
 				<view class="record btn" :class="{displaynone:!isrecord}">
 					按住说话
 				</view>
-				<view class="bt-img">
-					<image src="../../static/submit/bq.png" mode=""></image>
+				<view class="bt-img" @tap="emoji()">
+					<image src="../../static/submit/bq.png"></image>
 				</view>
 				<view class="bt-img">
-					<image src="../../static/submit/tj.png" mode=""></image>
+					<image src="../../static/submit/tj.png"></image>
 				</view>
 			</view>
 			<view class="emoji" :class="{displaynone:isemoji}">
@@ -30,10 +30,17 @@
 			return {
 				isemoji: true,
 				isrecord: false,
-				toc: "../../static/submit/yy.png"
+				toc: "../../static/submit/yy.png",
+				msg: ""
 			};
 		},
 		methods: {
+			getElementHeight() {
+				const query = uni.createSelectorQuery().in(this);
+				query.select('.submit').boundingClientRect(data => {
+					this.$emit('heights',data.height)
+				}).exec();
+			},
 			records() {
 				if (this.isrecord) {
 					this.isrecord = false
@@ -45,6 +52,20 @@
 			},
 			emoji() {
 				this.isemoji = !this.isemoji
+				setTimeout(() => {
+					this.getElementHeight()
+				}, 0)
+			},
+			inputs(e) {
+				let chatm = e.detail.value;
+				let pos = chatm.indexOf('\n')
+				if (pos != -1 && chatm.length > 1) {
+					this.$emit('inputs', this.msg)
+					setTimeout(() => {
+						this.msg = ""
+					}, 0)
+
+				}
 			}
 		}
 	}
@@ -55,7 +76,6 @@
 		background: rgba(244, 244, 244, 0.96);
 		border-top: 1px solid $uni-border-color;
 		width: 100%;
-		height: 100rpx;
 		position: fixed;
 		bottom: 0;
 		z-index: 100;

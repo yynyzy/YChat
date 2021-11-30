@@ -18,61 +18,63 @@
 			</view>
 		</view>
 		<scroll-view scroll-y="true" class="chat" scroll-with-animation="true" :scroll-into-view="scrollToView">
-			<view class="chat-main">
-				<view class="chat-ls" v-for="(item,index) in msgs" :key="index" :id ="'msg'+ item.tip">
+			<view class="chat-main" :style="{paddingBottom:inputh+'px'}">
+				<view class="chat-ls" v-for="(item,index) in msgs" :key="index" :id="'msg'+ item.tip">
 					<view class="chat-time" v-if="item.time !==''">
-					{{changeTime(item.time)}}
+						{{changeTime(item.time)}}
 					</view>
 					<view class="msg-m msg-left" v-if="item.id !='b'">
 						<image :src="item.imgurl" class="user-img"></image>
 						<view class="message" v-if="item.types==0">
-							<view class="msg-text" >
-									{{item.message}}
+							<view class="msg-text">
+								{{item.message}}
 							</view>
 						</view>
-						<view class="message"  v-if="item.types==1">
+						<view class="message" v-if="item.types==1">
 							<image :src="item.message" mode="widthFix" class="msg-img" @tap="previewImage"></image>
 						</view>
 					</view>
 					<view class="msg-m msg-right" v-if="item.id =='b'">
-						<image :src="item.imgurl"  class="user-img"></image>
+						<image :src="item.imgurl" class="user-img"></image>
 						<view class="message" v-if="item.types==0">
-							<view class="msg-text" >
-									{{item.message}}
+							<view class="msg-text">
+								{{item.message}}
 							</view>
 						</view>
-						<view class="message"  v-if="item.types==1">
-							<image :src="item.message" mode="widthFix" class="msg-img" @tap="previewImage(item.message)"></image>
+						<view class="message" v-if="item.types==1">
+							<image :src="item.message" mode="widthFix" class="msg-img"
+								@tap="previewImage(item.message)"></image>
 						</view>
 					</view>
 				</view>
 			</view>
 			<view class="padbt">
-				
+
 			</view>
 		</scroll-view>
-		<submit></submit>
+		<submit @inputs="inputs" @heights="heights"></submit>
 	</view>
 </template>
 
 <script>
 	import datas from "../../commons/js/datas.js"
 	import myfun from "../../commons/js/myfun.js"
-	
+
 	import submit from "../../components/submit/submit.vue"
 	export default {
 		data() {
 			return {
 				msgs: [],
-				imgMsg:[],
-				oldTime:new Date(),
-				scrollToView:''
+				imgMsg: [],
+				oldTime: new Date(),
+				scrollToView: '',
+				inputh:"60"
 			}
 		},
 		onLoad() {
 			this.getMsg()
 		},
-		comments:{
+		comments: {
 			submit
 		},
 		methods: {
@@ -81,45 +83,72 @@
 					detail: 1
 				})
 			},
-			changeTime(date){
+			heights(e){
+				this.inputh =e 
+				this.goBottom()
+			},
+			goBottom(){
+				console.log(1)
+				this.scrollToView=""
+				this.$nextTick(function() {
+					let len = this.msgs.length - 1
+					this.scrollToView = 'msg' + this.msgs[len].tip
+				})
+			},
+			changeTime(date) {
 				return myfun.dateTime1(date)
 			},
-			getMsg(){
+			getMsg() {
 				let msg = datas.message()
-				for(let i =0;i<msg.length;i++){
-					msg[i].imgurl='../../static/img/'+msg[i].imgurl
-					if(i<msg.length-1){
-						let t =myfun.spaceTime(this.oldTime,msg[i].time)
-						if(t){
-							this.oldTime =t
+				for (let i = 0; i < msg.length; i++) {
+					msg[i].imgurl = '../../static/img/' + msg[i].imgurl
+					if (i < msg.length - 1) {
+						let t = myfun.spaceTime(this.oldTime, msg[i].time)
+						if (t) {
+							this.oldTime = t
 						}
-						msg[i].time =t
+						msg[i].time = t
 					}
-					if(msg[i].types==1){
-						msg[i].message='../../static/img/'+msg[i].message
+					if (msg[i].types == 1) {
+						msg[i].message = '../../static/img/' + msg[i].message
 						this.imgMsg.unshift(msg[i].message)
 					}
 					this.msgs.unshift(msg[i])
 				}
-				this.$nextTick(function(){
+				this.$nextTick(function() {
 					let len = this.msgs.length
-					this.scrollToView='msg'+this.msgs[len-1].tip
+					this.scrollToView = 'msg' + this.msgs[len - 1].tip
 				})
 			},
-			previewImage(currentUrl){
+			previewImage(currentUrl) {
 				uni.previewImage({
-					current:currentUrl,
-				           urls: this.imgMsg,
-				           longPressActions: {
-				               itemList: ['发送给朋友', '保存图片', '收藏'],
-				               success: function(data) {
-				                   console.log('选中了第' + (data.tapIndex + 1) + '个按钮,第' + (data.index + 1) + '张图片');
-				               },
-				               fail: function(err) {
-				                   console.log(err.errMsg);
-				               }
-				           }
-				       });
+					current: currentUrl,
+				 urls: this.imgMsg,
+					longPressActions: {
+						itemList: ['发送给朋友', '保存图片', '收藏'],
+						success: function(data) {
+							console.log('选中了第' + (data.tapIndex + 1) + '个按钮,第' + (data.index + 1) + '张图片');
+						},
+						fail: function(err) {
+							console.log(err.errMsg);
+						}
+					}
+				});
+			},
+			inputs(e) {
+				let len = this.msgs.length
+				let data ={
+					id: 'b',
+					imgurl: '../../static/img/one.png',
+					message:e,
+					tip: 0,
+					types:0,
+					time: new Date
+				}
+				this.msgs.push(data)
+				this.$nextTick(function() {
+					this.scrollToView = 'msg' + this.msgs[len - 1].tip
+				})
 			}
 		}
 	}
@@ -160,15 +189,16 @@
 
 	.chat {
 		height: 100%;
-.padbt{
-	height: var(--status-bar-height);
-	width: 100%;
-}
+
+		.padbt {
+			height: var(--status-bar-height);
+			width: 100%;
+		}
+
 		.chat-main {
 			padding-left: $uni-spacing-col-base;
 			padding-right: $uni-spacing-col-base;
 			padding-top: 100rpx;
-			padding-bottom: 120rpx;
 			display: flex;
 			flex-direction: column;
 
@@ -205,9 +235,10 @@
 					line-height: 44rpx;
 					padding: 18rpx 24rpx;
 				}
-				.msg-img{
+
+				.msg-img {
 					max-width: 400rpx;
-				border-radius: $uni-border-radius-base;
+					border-radius: $uni-border-radius-base;
 				}
 			}
 
@@ -219,7 +250,8 @@
 					background-color: #fff;
 					border-radius: 0rpx 20rpx 20rpx 20rpx;
 				}
-				.msg-img{
+
+				.msg-img {
 					margin-left: 16rpx;
 				}
 			}
@@ -232,8 +264,9 @@
 					background-color: #fff260;
 					border-radius: 20rpx 0rpx 20rpx 20rpx;
 				}
-				.msg-img{
-				margin-right: 16rpx;
+
+				.msg-img {
+					margin-right: 16rpx;
 				}
 			}
 		}
