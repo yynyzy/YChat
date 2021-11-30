@@ -145,6 +145,7 @@
 					types:e.type,
 					time: new Date
 				}
+				console.log(e)
 				this.msgs.push(data)
 				this.$nextTick(function() {
 					this.scrollToView = 'msg' + len
