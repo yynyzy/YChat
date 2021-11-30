@@ -64,7 +64,6 @@
 					setTimeout(() => {
 						this.msg = ""
 					}, 0)
-
 				}
 			}
 		}
@@ -79,7 +78,7 @@
 		position: fixed;
 		bottom: 0;
 		z-index: 100;
-		padding-bottom: var(--status-bar-height);
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 
 	.displaynone {

@@ -48,9 +48,9 @@
 					</view>
 				</view>
 			</view>
-			<view class="padbt">
+		<!-- 	<view class="padbt">
 
-			</view>
+			</view> -->
 		</scroll-view>
 		<submit @inputs="inputs" @heights="heights"></submit>
 	</view>
@@ -136,7 +136,7 @@
 				});
 			},
 			inputs(e) {
-				let len = this.msgs.length
+					let len = this.msgs.length
 				let data ={
 					id: 'b',
 					imgurl: '../../static/img/one.png',
@@ -147,9 +147,11 @@
 				}
 				this.msgs.push(data)
 				this.$nextTick(function() {
-					this.scrollToView = 'msg' + this.msgs[len - 1].tip
+					this.scrollToView = 'msg' + len
+					console.log(this.scrollToView)
 				})
 			}
+			
 		}
 	}
 </script>
