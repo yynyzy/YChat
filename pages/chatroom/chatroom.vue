@@ -136,13 +136,13 @@
 				});
 			},
 			inputs(e) {
-					let len = this.msgs.length
+				let len = this.msgs.length
 				let data ={
 					id: 'b',
 					imgurl: '../../static/img/one.png',
-					message:e,
-					tip: 0,
-					types:0,
+					message:e.message,
+					tip: len,
+					types:e.type,
 					time: new Date
 				}
 				this.msgs.push(data)

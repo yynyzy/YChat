@@ -60,11 +60,18 @@
 				let chatm = e.detail.value;
 				let pos = chatm.indexOf('\n')
 				if (pos != -1 && chatm.length > 1) {
-					this.$emit('inputs', this.msg)
-					setTimeout(() => {
-						this.msg = ""
-					}, 0)
+					this.send(this.msg,0)
 				}
+			},
+			send(msg,type){
+				let data={
+					message:msg,
+					types:type
+				}
+				this.$emit('inputs', data)
+				setTimeout(() => {
+					this.msg = ""
+				}, 0)
 			}
 		}
 	}
