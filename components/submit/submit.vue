@@ -7,7 +7,7 @@
 				</view>
 				<textarea auto-height="true" class="chat-send btn" :class="{displaynone:isrecord}" @input="inputs"
 					v-model="msg" />
-				<view class="record btn" :class="{displaynone:!isrecord}">
+				<view class="record btn" :class="{displaynone:!isrecord}" @touchstart="touchstart" @touchend="touchend">
 					按住说话
 				</view>
 				<view class="bt-img" @tap="emoji()">
@@ -58,6 +58,8 @@
 </template>
 
 <script>
+	
+	const recorderManager = uni.getRecorderManager();
 	export default {
 		name: "submit",
 		data() {
@@ -66,7 +68,9 @@
 				isrecord: false,
 				ismore: true,
 				toc: "../../static/submit/yy.png",
-				msg: ""
+				msg: "",
+				timer:'	',
+				vlength:0
 			};
 		},
 		methods: {
@@ -141,6 +145,28 @@
 				setTimeout(() => {
 					this.msg = ""
 				}, 0)
+			},
+			touchstart(){
+				let i =0
+				this.timer =setInterval(()=>{
+					i++
+					if(i>10){
+						clearInterval(this.timer)
+					}
+				},1000)
+				recorderManager.start()
+			},
+			touchend (){
+				clearInterval(this.timer)
+				recorderManager.stop()
+				recorderManager.onStop((res)=>{
+					let data ={
+						voice:res.tempFilePath,
+						time:this.vlength
+					}
+					console.log(data)
+					this.send(data,2)
+				})
 			}
 		}
 	}

@@ -36,7 +36,7 @@
 						</view>
 						<!-- 音频 -->
 						<view class="message" v-if="item.types==2">
-							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}">
+							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}"  @tap="playVoice(item.message.voice)">
 								{{item.message.time}}
 								<image src="../../static/submit/yy.png" class="voice-img"></image>
 							</view>
@@ -56,7 +56,7 @@
 						</view>
 						<!-- 音频 -->
 						<view class="message" v-if="item.types==2">
-							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}">
+							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}"  @tap="playVoice(item.message.voice)">
 								{{item.message.time}}
 								<image src="../../static/submit/yy.png" class="voice-img"></image>
 							</view>
@@ -74,6 +74,7 @@
 	import myfun from "../../commons/js/myfun.js"
 
 	import submit from "../../components/submit/submit.vue"
+
 	export default {
 		data() {
 			return {
@@ -147,6 +148,14 @@
 						}
 					}
 				});
+			},
+			playVoice(e){
+				const innerAudioContext = uni.createInnerAudioContext();
+				innerAudioContext.autoplay = true;
+				innerAudioContext.src = e;
+				innerAudioContext.onPlay(() => {
+				  console.log('开始播放');
+				}); 
 			},
 			inputs(e) {
 				let len = this.msgs.length
