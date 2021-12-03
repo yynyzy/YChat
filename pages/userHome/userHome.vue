@@ -31,8 +31,11 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn btn1" @tap="addFriendAnimation">
+			<view class="bottom-btn btn1" @tap="addFriendAnimation" v-if="relation == 2">
 				加为好友
+			</view>
+			<view class="bottom-btn btn1" v-if="relation == 1">
+				发送消息
 			</view>
 		</view>
 		<view class="add-misg" :style="{height:addHeight+'px',bottom:-+addHeight+'px'}" :animation="animationData">
@@ -227,6 +230,7 @@
 
 	}
 	.bottom-bar{
+
 		.bottom-btn{
 			background: $uni-color-primary;
 			margin: 0 $uni-spacing-col-base;

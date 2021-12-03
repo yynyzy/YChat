@@ -6,19 +6,22 @@
 			</view>
 			<view class="top-bar-center">
 				<view class="title">
-					小明
+					{{fname}}
 				</view>
 			</view>
 			<view class="top-bar-right">
 				<view class="pice">
 				</view>
-				<view class="group-img">
+				<view class="group-img" v-if="type == 0" @tap="goGroupHome">
 					<image src="../../static/img/three.png"></image>
 				</view>
 			</view>
 		</view>
-		<scroll-view scroll-y="true" class="chat" scroll-with-animation="true" :scroll-into-view="scrollToView">
+		<scroll-view scroll-y="true" class="chat" :scroll-into-view="scrollToView" :scrolltoupper="nextPage">
 			<view class="chat-main" :style="{paddingBottom:inputh+'px'}">
+				<view class="loading" :class="{displaynone:isloading}">
+					<image src="../../static/common/loading.png" class="loading-img" :animation="animationData"></image>
+				</view>
 				<view class="chat-ls" v-for="(item,index) in msgs" :key="index" :id="'msg'+ item.tip">
 					<view class="chat-time" v-if="item.time !==''">
 						{{changeTime(item.time)}}
@@ -36,9 +39,23 @@
 						</view>
 						<!-- 音频 -->
 						<view class="message" v-if="item.types==2">
-							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}"  @tap="playVoice(item.message.voice)">
+							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}"
+								@tap="playVoice(item.message.voice)">
 								{{item.message.time}}
 								<image src="../../static/submit/yy.png" class="voice-img"></image>
+							</view>
+						</view>
+						<!-- 位置 -->
+						<view class="message" v-if="item.types==3">
+							<view class="msg-map" @tap="openLocation(item.message)">
+								<view class="map-name">
+									{{item.message.name}}
+								</view>
+								<view class="map-address">
+									{{item.message.address}}
+								</view>
+								<map :latitude="item.message.latitude" :longitude="item.message.longitude"
+									:marker="covers(item.message)"></map>
 							</view>
 						</view>
 					</view>
@@ -56,9 +73,23 @@
 						</view>
 						<!-- 音频 -->
 						<view class="message" v-if="item.types==2">
-							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}"  @tap="playVoice(item.message.voice)">
+							<view class="msg-text voice" :style="{width:item.message.time*4+'px'}"
+								@tap="playVoice(item.message.voice)">
 								{{item.message.time}}
 								<image src="../../static/submit/yy.png" class="voice-img"></image>
+							</view>
+						</view>
+						<!-- 位置 -->
+						<view class="message" v-if="item.types==3">
+							<view class="msg-map" @tap="openLocation(item.message)">
+								<view class="map-name">
+									{{item.message.name}}
+								</view>
+								<view class="map-address">
+									{{item.message.address}}
+								</view>
+								<map :latitude="item.message.latitude" :longitude="item.message.longitude"
+									:marker="covers(item.message)"></map>
 							</view>
 						</view>
 					</view>
@@ -74,19 +105,33 @@
 	import myfun from "../../commons/js/myfun.js"
 
 	import submit from "../../components/submit/submit.vue"
-
+	const innerAudioContext = uni.createInnerAudioContext();
 	export default {
 		data() {
 			return {
+				uid:'',
+				uimgurl:'',
+				token:'',
+				uname:'',
+				fid:'',
+				fname:'',
+				fimgurl:'',
+				type:'',
 				msgs: [],
 				imgMsg: [],
 				oldTime: new Date(),
 				scrollToView: '',
-				inputh:"60"
+				inputh: "60",
+				animationData: {},
+				nowpage: 0,
+				loading: '',
+				isloading: true,
+				beginLoading: true
 			}
 		},
 		onLoad() {
-			this.getMsg()
+			this.getMsg(this.nowpage)
+			this.nextPage()
 		},
 		comments: {
 			submit
@@ -97,13 +142,19 @@
 					detail: 1
 				})
 			},
-			heights(e){
-				this.inputh =e 
+			
+			goGroupHome:function(){
+				uni.navigateTo({
+					url:'../grouphome/grouphome?gid='+this.fid+'&gimg='+this.fimgurl
+				})
+			},
+			heights(e) {
+				this.inputh = e
 				this.goBottom()
 			},
-			goBottom(){
+			goBottom() {
 				console.log(1)
-				this.scrollToView=""
+				this.scrollToView = ""
 				this.$nextTick(function() {
 					let len = this.msgs.length - 1
 					this.scrollToView = 'msg' + this.msgs[len].tip
@@ -112,9 +163,41 @@
 			changeTime(date) {
 				return myfun.dateTime1(date)
 			},
-			getMsg() {
+			nextPage() {
+				if (this.nowpage > 0 && this.beginLoading) {
+					this.isloading = false
+
+					this.beginLoading = false
+
+					var animation = uni.createAnimation({
+						duration: 1000,
+						timingFunction: 'ease',
+					})
+					this.animation = animation
+					this.animationData = animation.export()
+					let i = 1
+					this.loading = setInterval(function() {
+						animation.rotate(i * 30).step()
+						this.animationData = animation.export()
+						i++
+						if (i > 20) {
+							this.getMsg(this.nowpage)
+						}
+
+					}.bind(this), 200)
+				}
+			},
+			getMsg(page) {
+
 				let msg = datas.message()
-				for (let i = 0; i < msg.length; i++) {
+				let maxpages = msg.length
+				if (msg.length > (page + 1) * 10) {
+					maxpages = (page + 1) * 10
+					this.nowpage++
+				} else {
+					this.nowpage = -1
+				}
+				for (var i = page * 10; i < maxpages; i++) {
 					msg[i].imgurl = '../../static/img/' + msg[i].imgurl
 					if (i < msg.length - 1) {
 						let t = myfun.spaceTime(this.oldTime, msg[i].time)
@@ -129,15 +212,20 @@
 					}
 					this.msgs.unshift(msg[i])
 				}
+
 				this.$nextTick(function() {
 					let len = this.msgs.length
-					this.scrollToView = 'msg' + this.msgs[len - 1].tip
+					this.scrollToView = 'msg' + this.msgs[maxpages - page * 10 - 1].tip
 				})
+				clearInterval(this.loading)
+
+				this.beginLoading = true
+				this.isloading = true
 			},
 			previewImage(currentUrl) {
 				uni.previewImage({
 					current: currentUrl,
-				 urls: this.imgMsg,
+					urls: this.imgMsg,
 					longPressActions: {
 						itemList: ['发送给朋友', '保存图片', '收藏'],
 						success: function(data) {
@@ -149,22 +237,38 @@
 					}
 				});
 			},
-			playVoice(e){
-				const innerAudioContext = uni.createInnerAudioContext();
-				innerAudioContext.autoplay = true;
+			playVoice(e) {
 				innerAudioContext.src = e;
-				innerAudioContext.onPlay(() => {
-				  console.log('开始播放');
-				}); 
+				innerAudioContext.play()
+			},
+			covers(e) {
+				let map = [{
+					latitude: e.latitude,
+					longitude: e.longitude,
+					iconPath: '../../static/img/one.png'
+				}]
+				return (map)
+			},
+			openLocation(e) {
+
+				uni.openLocation({
+					latitude: e.latitude,
+					longitude: e.longitude,
+					name: e.name,
+					address: e.address,
+					success: function() {
+						console.log('success');
+					}
+				});
 			},
 			inputs(e) {
 				let len = this.msgs.length
-				let data ={
+				let data = {
 					id: 'b',
 					imgurl: '../../static/img/one.png',
-					message:e.message,
+					message: e.message,
 					tip: len,
-					types:e.types,
+					types: e.types,
 					time: new Date
 				}
 				console.log(e)
@@ -176,7 +280,7 @@
 					this.imgMsg.push(e.message)
 				}
 			}
-			
+
 		}
 	}
 </script>
@@ -220,6 +324,15 @@
 		.padbt {
 			height: var(--status-bar-height);
 			width: 100%;
+		}
+
+		.loading {
+			text-align: center;
+
+			.loading-img {
+				width: 60rpx;
+				height: 60rpx;
+			}
 		}
 
 		.chat-main {
@@ -267,11 +380,45 @@
 					max-width: 400rpx;
 					border-radius: $uni-border-radius-base;
 				}
-				.voice{
+
+				.msg-map {
+					background: #fff;
+					width: 464rpx;
+
+					.map-name {
+						font-size: $uni-font-size-lg;
+						color: $uni-text-color;
+						line-height: 44rpx;
+						padding: 18rpx 24rpx 0 24rpx;
+						display: -webkit-box;
+						-webkit-box-orient: vertical;
+						-webkit-line-clamp: 1;
+						overflow: hidden;
+					}
+
+					.map-address {
+						font-size: $uni-font-size-sm;
+						color: $uni-text-color-disable;
+						padding: 0 24rpx;
+						display: -webkit-box;
+						-webkit-box-orient: vertical;
+						-webkit-line-clamp: 1;
+						overflow: hidden;
+					}
+
+					map {
+						width: 464rpx;
+						height: 190rpx;
+						padding-top: 8rpx;
+					}
+				}
+
+				.voice {
 					min-width: 80rpx;
 					max-width: 400rpx;
 				}
-				.voice-img{
+
+				.voice-img {
 					width: 28rpx;
 					height: 36rpx;
 				}
@@ -289,10 +436,17 @@
 				.msg-img {
 					margin-left: 16rpx;
 				}
-				.voice{
+
+				.msg-map {
+					margin-left: 16rpx;
+					border-radius: 0 20rpx 0 20rpx;
+				}
+
+				.voice {
 					text-align: right;
 				}
-				.voice-img{
+
+				.voice-img {
 					float: left;
 					transform: rotate (180deg);
 					width: 28rpx;
@@ -313,10 +467,12 @@
 				.msg-img {
 					margin-right: 16rpx;
 				}
-				.voice{
+
+				.voice {
 					text-align: left;
 				}
-				.voice-img{
+
+				.voice-img {
 					float: right;
 					width: 28rpx;
 					height: 36rpx;
@@ -324,5 +480,9 @@
 				}
 			}
 		}
+	}
+
+	.displaynone {
+		display: none;
 	}
 </style>

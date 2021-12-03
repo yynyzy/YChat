@@ -106,6 +106,19 @@ export default {
 	message:function(){
 		let msgs=[
 			{
+				id: 'b',
+				imgurl: 'three.png',
+				message:{
+					name:'天安门售票处',
+					address:'东长安街天安门',
+					latitude:'39.909473',
+					longitude:'116.39730899999999'
+				},
+				tip: 7,
+				types:3,
+				time: new Date()
+			},
+			{
 				id: 'a',
 				imgurl: 'one.png',
 				message:{
@@ -175,3 +188,6 @@ export default {
 	}
 
 }
+
+
+

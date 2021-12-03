@@ -33,7 +33,7 @@
 						拍照
 					</view>
 				</view>
-				<view class="more-list">
+				<view class="more-list" @tap='chooseLocation'>
 					<image src="../../static/submit/dw.png"></image>
 					<view class="more-list-title">
 						定位
@@ -58,7 +58,6 @@
 </template>
 
 <script>
-	
 	const recorderManager = uni.getRecorderManager();
 	export default {
 		name: "submit",
@@ -69,7 +68,7 @@
 				ismore: true,
 				toc: "../../static/submit/yy.png",
 				msg: "",
-				timer:'	',
+				timer:'',
 				vlength:0
 			};
 		},
@@ -154,7 +153,7 @@
 						clearInterval(this.timer)
 					}
 				},1000)
-				recorderManager.start()
+				recorderManager.start();
 			},
 			touchend (){
 				clearInterval(this.timer)
@@ -164,9 +163,21 @@
 						voice:res.tempFilePath,
 						time:this.vlength
 					}
-					console.log(data)
 					this.send(data,2)
 				})
+			},
+			chooseLocation(){
+				uni.chooseLocation({
+				    success: (res) =>{
+						let data ={
+							name:res.name,
+							name:res.address,
+							name:res.latitude,
+							name:res.longitude
+						}
+				        this.send(data,3)
+				    }
+				});
 			}
 		}
 	}

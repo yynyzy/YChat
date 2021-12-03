@@ -4,21 +4,23 @@
 			<view class="top-bar-right" @tap="tosign()">
 				<view class="text">注册</view>
 			</view>
-			</view>
-			<view class="logo">
-				<image src="../../static/index/logo.png"/>
-			</view>
-			<view class="main">
-				<view class="title">登录</view>
-				<view class="slogan">您好，欢迎来到 YChat</view>
-				<view class="inputs">
-					<input type="text" class="user" placeholder="用户名/邮箱" placeholder-style="color:#aaa;font-weight:400;" @blur="getuser"/>
-					<input type="password" class="psw" placeholder="密码"  placeholder-style="color:#aaa;font-weight:400;" @blur="getpsw"/>
-				</view>
-				<view class="tips">用户名或密码输入错误</view>
-			</view>
-			<view class="submit" @tap="login">登录</view>
 		</view>
+		<view class="logo">
+			<image src="../../static/index/logo.png" />
+		</view>
+		<view class="main">
+			<view class="title">登录</view>
+			<view class="slogan">您好，欢迎来到 YChat</view>
+			<view class="inputs">
+				<input type="text" class="user" placeholder="用户名/邮箱" placeholder-style="color:#aaa;font-weight:400;"
+					@blur="getuser" />
+				<input type="password" class="psw" placeholder="密码" placeholder-style="color:#aaa;font-weight:400;"
+					@blur="getpsw" />
+			</view>
+			<view class="tips">用户名或密码输入错误</view>
+		</view>
+		<view class="submit" @tap="login">登录</view>
+	</view>
 	</view>
 </template>
 
@@ -26,37 +28,34 @@
 	export default {
 		data() {
 			return {
-user:"",
-psw:""
+				user: "",
+				psw: ""
 			};
 		},
-		methods:{
-			testFun(){
-				uni.request({
-					url:"http://192.168.0.3:3000/test",
-					data:{
-						
-					},
-					method:"GET",
-					success:data=>{
-						console.log(data)
-					}
-				})
-			},
-			tosign(){
+		methods: {
+			tosign() {
 				uni.navigateTo({
-					url:"../sign/sign"
+					url: "../sign/sign"
 				})
 			},
-			getuser(e){
+			getuser(e) {
 				this.user = e.target.value
 			},
-			getpsw(e){
+			getpsw(e) {
 				this.psw = e.target.value
 			},
-			login(){
-				if(this.user && this.psw){
-					console.log("cg")
+			login() {
+				if (this.user && this.psw) {
+					uni.request({
+						url: "http://localhost:3000/mail",
+						data: {
+							mail: this.user
+						},
+						method: "POST",
+						success: data => {
+							console.log(data)
+						}
+					})
 				}
 			}
 		}
@@ -66,18 +65,20 @@ psw:""
 <style lang="scss">
 	@import "../../commons/css/mycss.scss";
 
-	.logo{
+	.logo {
 		text-align: center;
+
 		image {
 			padding-top: 256rpx;
 			width: 194rpx;
 			height: 92rpx;
 			margin: 0 auto;
 		}
-	} 
+	}
 
 	.main {
 		padding: 54rpx $uni-spacing-row-lg 120rpx;
+
 		// width: 100%;
 		.title {
 			font-size: 56rpx;
@@ -85,13 +86,16 @@ psw:""
 			color: $uni-text-color;
 			line-height: 80rpx;
 		}
-		.slogan{
+
+		.slogan {
 			font-size: 40rpx;
 			color: $uni-text-color-grey;
 			line-height: 56rpx;
 		}
+
 		.inputs {
 			padding-top: 8rpx;
+
 			input {
 				height: 88rpx;
 				font-size: $uni-font-size-lg;
@@ -101,21 +105,23 @@ psw:""
 				border-bottom: 1px solid $uni-border-color;
 			}
 		}
-		.tips{
+
+		.tips {
 			float: left;
 			font-size: $uni-font-size-lg;
 			color: $uni-color-warning;
 			line-height: 56rpx;
 			border-bottom: 1px solid $uni-bg-color;
 		}
-		
+
 	}
+
 	.submit {
 		margin: 0 auto;
 		width: 520rpx;
 		height: 96rpx;
 		background: $uni-color-primary;
-		box-shadow: 0 50rpx 32rpx -36rpx rgba(255,228,49,0.4);
+		box-shadow: 0 50rpx 32rpx -36rpx rgba(255, 228, 49, 0.4);
 		border-radius: 48rpx;
 		font-size: $uni-font-size-lg;
 		font-weight: 500;
