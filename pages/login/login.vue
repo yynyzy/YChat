@@ -5,7 +5,7 @@
 				<view class="text">注册</view>
 			</view>
 		</view>
-		<view class="logo">
+		<view class="logo" @tap="test1">
 			<image src="../../static/index/logo.png" />
 		</view>
 		<view class="main">
@@ -19,7 +19,7 @@
 			</view>
 			<view class="tips">用户名或密码输入错误</view>
 		</view>
-		<view class="submit" @tap="login">登录</view>
+		<view class="submit" @tap="test">登录</view>
 	</view>
 	</view>
 </template>
@@ -29,7 +29,8 @@
 		data() {
 			return {
 				user: "",
-				psw: ""
+				psw: "",
+				token: ''
 			};
 		},
 		methods: {
@@ -47,9 +48,11 @@
 			login() {
 				if (this.user && this.psw) {
 					uni.request({
-						url: "http://localhost:3000/mail",
+						url: "http://localhost:3000/signup/add",
 						data: {
-							mail: this.user
+							mail: 'xiaohong@163.com',
+							name: '小红',
+							pwd: '12345678'
 						},
 						method: "POST",
 						success: data => {
@@ -57,6 +60,54 @@
 						}
 					})
 				}
+			},
+			test() {
+				uni.request({
+					url: "http://localhost:3000/index/updateMsg",
+					data: {
+						// name: '小白',
+						// mail:'xiaobai@163.com',
+						// pwd: '12345678'
+						// data:'小'
+						uid:'61ac70ab62510d4989e0767b',
+						fid:'61ac762f697451957fe34579'
+					},
+					method: "POST",
+					success: data => {
+						// this.token = data.data.back.token
+						console.log(data)
+					}
+				})
+
+			},
+			test1() {
+				uni.request({
+					url: "http://localhost:3000/index/unreadMsg",
+					data: {
+						uid:'61ac70ab62510d4989e0767b',
+						fid:'61ac762f697451957fe34579'
+					},
+					method: "POST",
+					success: data => {
+						console.log(data)
+					}
+				})
+
+			},
+			test2() {
+				uni.request({
+					url: "http://localhost:3000/friend/updateFriendState",
+					data: {
+						uid: "61ab3418c3058ec19dba1fb3",
+						fid:'61ab3b912b16076963bd99dd',
+						// msg:'好友申请3'
+					},
+					method: "POST",
+					success: data => {
+						console.log(data)
+					}
+				})
+
 			}
 		}
 	}
