@@ -132,7 +132,7 @@
 									})
 								} else if (status == 300) {
 									uni.navigateTo({
-										url: '../signin/signin?name=' + this.myname
+										url: '../login/login'
 									})
 								}
 							}
@@ -182,7 +182,7 @@
 							})
 						} else if (status == 300) {
 							uni.navigateTo({
-								url: '../signin/signin?name=' + this.myname
+								url: '../login/login'
 							})
 						}
 					}
@@ -224,7 +224,7 @@
 								})
 							} else if (status == 300) {
 								uni.navigateTo({
-									url: '../signin/signin?name=' + this.myname
+									url: '../login/login'
 								})
 							}
 							arr.tip = tip

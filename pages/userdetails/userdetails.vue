@@ -103,7 +103,7 @@
 				</view>
 			</view>
 			<view class="column">
-				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id==uid">
+				<view class="row" @tap="modify('电话',dataArr.name,false)" v-if="id==uid">
 					<view class="title">
 						电话
 					</view>
@@ -122,13 +122,9 @@
 						{{user.phone}}
 					</view>
 				</view>
-				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id==uid">
-					<view class="title">
-						邮箱
-					</view>
-					<view class="cont">
-						{{user.email}}
-					</view>
+				<view class="row" v-if="id==uid" @tap="modify('email','邮箱',user.email,false)">
+					<view class="title">邮箱</view>
+					<view class="cont">{{user.email}}</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
@@ -142,8 +138,8 @@
 					</view>
 				</view>
 			</view>
-			<view class="column" v-if="id==uid">
-				<view class="row">
+			<view class="column" v-if="id==uid"  @tap="modify('psw','密码','',false)">
+				<view class="row" >
 					<view class="title">
 						密码
 					</view>
@@ -156,8 +152,8 @@
 				</view>
 			</view>
 
-			<view class="btn2" v-if="id==uid">退出登录</view>
-			<view class="btn2" v-if="id!=uid">删除好友</view>
+			<view class="btn2" v-if="id==uid" @tap="quit()">退出登录</view>
+			<view class="btn2" v-if="id!=uid" @tap="deleteFriend()">删除好友</view>
 		</view>
 		<view class="modify" :style="{bottom:-+widHeight+'px'}" :animation="animationData">
 			<view class="modify-header">
@@ -290,7 +286,7 @@
 							})
 						} else if (status == 300) {
 							uni.navigateTo({
-								url: '../signin/signin?name=' + this.myname
+								url: '../login/login?name=' + this.myname
 							})
 						}
 					}
@@ -319,6 +315,7 @@
 							let status = data.data.status
 							if (status == 200) {
 								let res = data.data.result
+								console.log(data.data)
 								if (res.markname != undefined) {
 									this.markname = res.markname
 								}
@@ -330,7 +327,7 @@
 								})
 							} else if (status == 300) {
 								uni.navigateTo({
-									url: '../signin/signin?name=' + this.myname
+									url: '../login/login?name=' + this.myname
 								})
 							}
 						}
@@ -344,22 +341,22 @@
 			bindPickerChange: function(e) {
 				let oldindex = this.index
 				this.index = e.target.value
-				if(this.index!=oldindex){
-					let sex ='asexual'
-					if(this.index ==0){
-						sex='male'
-					}else if(this.index ==1){
-						sex="female"
+				if (this.index != oldindex) {
+					let sex = 'asexual'
+					if (this.index == 0) {
+						sex = 'male'
+					} else if (this.index == 1) {
+						sex = "female"
 					}
-					this.update(sex,'sex',undefined)
+					this.update(sex, 'sex', undefined)
 				}
-				
+
 			},
 			bindDateChange: function(e) {
-					let olddate = this.date
+				let olddate = this.date
 				this.date = e.target.value
-				if(this.date!=olddate){
-					this.update(this.date'birth',undefined)
+				if (this.date != olddate) {
+					this.update(this.date, 'birth', undefined)
 				}
 			},
 			getDate(type) {
@@ -445,7 +442,7 @@
 							})
 						} else if (status == 300) {
 							uni.navigateTo({
-								url: '../signin/signin?name=' + this.myname
+								url: '../login/login?name=' + this.myname
 							})
 						}
 					}
@@ -468,7 +465,7 @@
 					this.isPwd = 'block'
 				} else {
 					this.isPwd = 'none'
-					this.pwd =undefined
+					this.pwd = undefined
 				}
 				this.type = t
 				this.modifyType = type
@@ -527,13 +524,63 @@
 								})
 							} else if (status == 300) {
 								uni.navigateTo({
-									url: '../signin/signin?name=' + this.myname
+									url: '../login/login?name=' + this.myname
 								})
 							}
 						}
 					})
 				}
 
+			},
+			quit() {
+				uni.removeStorage({
+					key: 'user',
+					success() {
+						console.log('success')
+					}
+				})
+				uni.navigateTo({
+					url: '../login/login'
+				})
+			},
+			deleteFriend(){
+				uni.showModal({
+					title:'提示',
+					content:'确定删除该好友吗？',
+					success(res){
+						if(res.confirm){
+						uni.request({
+							url: this.serverUrl + "/friend/deleteFriend",
+							data: {
+								uid: this.uid,
+								fid:this.id,
+								token: this.token
+							},
+							method: "POST",
+							success: data => {
+								let status = data.data.status
+								if (status == 200) {
+									uni.navigateTo({
+										url: '../index/index'
+									})
+								} else if (status == 500) {
+									uni.showToast({
+										title: '服务器出错了',
+										icon: 'none',
+										duration: 1500
+									})
+								} else if (status == 300) {
+									uni.navigateTo({
+										url: '../login/login?name=' + this.myname
+									})
+								}
+							}
+						})	
+						}else if(res.cancel){
+							
+						}
+					}
+				})
 			}
 		}
 

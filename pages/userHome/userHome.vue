@@ -113,8 +113,6 @@
 			getElementStyle() {
 				const query = uni.createSelectorQuery().in(this);
 				query.select('.bg').boundingClientRect(data => {
-					console.log("得到布局位置信息" + JSON.stringify(data));
-					console.log("节点离页面顶部的距离为" + data.top);
 					this.addHeight = data.height - 186
 				}).exec();
 			},
@@ -188,7 +186,7 @@
 							})
 						} else if (status == 300) {
 							uni.navigateTo({
-								url: '../signin/signin?name=' + this.myname
+								url: '../login/login?name=' + this.myname
 							})
 						}
 					}
@@ -250,7 +248,7 @@
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
-							if (!typeof(res.markname)) {
+							if (res.markname!=undefined) {
 								this.markname = res.markname
 							}
 						} else if (status == 500) {
@@ -296,7 +294,7 @@
 								})
 							} else if (status == 300) {
 								uni.navigateTo({
-									url: '../signin/signin?name=' + this.myname
+									url: '../login/login?name=' + this.myname
 								})
 							}
 						}

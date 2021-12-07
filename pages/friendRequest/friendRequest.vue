@@ -17,13 +17,13 @@
 		<view class="main">
 			<view class="requester" v-for="(item,index) in requester" :key="index">
 				<view class="requester-top">
-					<view class="reject btn">
+					<view class="reject btn" @tap="refuse(item.id)">
 						拒绝
 					</view>
 					<view class="header-img">
 						<image src="../../static/img/four.png"></image>
 					</view>
-					<view class="agree btn">
+					<view class="agree btn" @tap="agree(item.id)">
 						同意
 					</view>
 				</view>
@@ -32,12 +32,12 @@
 						{{item.name}}
 					</view>
 					<view class="time">
-					{{changeTime(item.time)}}
+						{{changeTime(item.lastTime)}}
 					</view>
 				</view>
 				<view class="notic">
-					<text>留言</text>
-					你好，想请求加为好友。谢谢你的通过。
+					<text>留言:</text>
+					{{item.msg}}
 				</view>
 			</view>
 
@@ -49,17 +49,40 @@
 <script>
 	import datas from "../../commons/js/datas.js"
 	import myfun from "../../commons/js/myfun.js"
-	
+
 	export default {
 		data() {
 			return {
+				uid: '',
+				token: '',
+				myname: '',
 				requester: []
 			}
 		},
 		onLoad() {
-			this.getrequester()
+			this.getStorages()
+			// this.getrequester()
+			this.friendRequest()
 		},
 		methods: {
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.imgurl = this.serverUrl + '/user/' + value.imgurl
+						this.token = value.token
+						this.myname = value.name
+
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
+					}
+				} catch (e) {
+					console.log(e)
+				}
+			},
 			backOne() {
 				uni.navigateBack({
 					detail: 1
@@ -68,13 +91,133 @@
 			changeTime: function(data) {
 				return myfun.dateTime(data)
 			},
-			getrequester: function() {
-				this.requester = datas.getFrinedLists()
-				for (let i = 0; i < this.requester.length; i++) {
-					this.requester[i].img = "../../static/img/" + this.requester[i].imgurl
-				}
-				console.log(this.requester)
+			friendRequest() {
+				uni.request({
+					url: this.serverUrl + "/index/getFriend",
+					data: {
+						uid: this.uid,
+						state: 1,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							for (let i = 0; i < res.length; i++) {
+								res[i].imgurl =this.serverUrl+'/user/'+res[i].imgurl
+								this.getleave(res,i)
+							}
+							this.requester=res
+
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
 			},
+			getleave(arr,i) {
+				 uni.request({
+					url: this.serverUrl + "/index/getLastMsg",
+					data: {
+						uid: this.uid,
+						fid:arr[i].id,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							let e =arr[i]
+							e.msg =res.message
+							arr.splice(i,1,e)
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+				
+			},
+			refuse(fid){
+				uni.request({
+					url: this.serverUrl + "/friend/deleteFriend",
+					data: {
+						uid: this.uid,
+						fid:fid,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							for(let i=0;i<this.requester.length;i++){
+								if(this.requester[i].id == fid){
+									this.requester.splice(i,1)
+								}
+							}						
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			},
+			agree(fid){
+				uni.request({
+					url: this.serverUrl + "/friend/updateFriendState",
+					data: {
+						uid: this.uid,
+						fid:fid,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+													console.log(status)
+						if (status == 200) {
+							for(let i=0;i<this.requester.length;i++){
+								if(this.requester[i].id == fid){
+									this.requester.splice(i,1)
+								}
+							}						
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			}
 		}
 	}
 </script>
@@ -85,6 +228,9 @@
 	.top-bar {
 		background: rgba(255, 255, 255, 0.96);
 		border-bottom: 1px solid $uni-border-color;
+		.top-bar-center {
+			z-index: -100;
+		}
 	}
 
 	.main {

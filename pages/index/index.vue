@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view @tap="goimg"  class="top-bar-left">
+			<view @tap="goimg" class="top-bar-left">
 				<image :src="imgurl" class="my-img"></image>
 			</view>
 			<view class="top-bar-center">
@@ -17,8 +17,22 @@
 			</view>
 		</view>
 		<view class="main">
-			<view class="apply"></view>
-			<view class="friends">
+			<view class="friends" v-if="requestData>0" @tap="goRequest">
+				<view class="friend-list">
+					<view class="friend-list-l">
+						<text class="tip">{{requestData}}</text>
+						<image src="../../static/index/apply.png"></image>
+					</view>
+					<view class="friend-list-r">
+						<view class="top">
+							<view class="name">好友申请</view>
+							<view class="time">{{changeTime(requestTime)}}</view>
+						</view>
+						<view class="news"></view>
+					</view>
+				</view>
+			</view>
+			<view class="friends" v-if="requestData>0">
 				<view class="friend-list" v-for="(item,index) in friends" :key="item.id">
 					<view class="friend-list-l">
 						<text class="tip" v-if="item.tip>0">{{item.tip<99?item.tip:"99+"}}</text>
@@ -48,19 +62,23 @@
 				imgurl: '',
 				uid: '',
 				token: '',
-				myname: ''
+				myname: '',
+				requestData: 0,
+				requestTime: ''
 			}
 		},
 		onLoad() {
-			this.getFriends()
 			this.getStorages()
+			this._getFriends()	
+			this.friendRequest()
+			this.getFriends()
 		},
 		methods: {
-			goimg(){
+			goimg() {
 				uni.navigateTo({
 					url: `../userHome/userHome?id=${this.uid}`
 				})
-				
+
 			},
 			changeTime: function(data) {
 				return myfun.dateTime(data)
@@ -83,11 +101,80 @@
 					console.log(e)
 				}
 			},
-			getFriends: function() {
+			_getFriends: function() {
 				this.friends = datas.getFrinedLists()
 				for (let i = 0; i < this.friends.length; i++) {
 					this.friends[i].img = "../../static/img/" + this.friends[i].imgurl
 				}
+			},
+			getFriends: function() {
+				uni.request({
+					url: this.serverUrl + "/index/getFriend",
+					data: {
+						uid: this.uid,
+						state: 0,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							console.log(res)
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			},
+			friendRequest() {
+				uni.request({
+					url: this.serverUrl + "/index/getFriend",
+					data: {
+						uid: this.uid,
+						state: 1,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							this.requestData = res.length
+							if (res.length > 0) {
+								this.requestTime = res[0].lastTime
+								for (let i = 1;i < res.length; i++) {
+									if (this.requestTime < res[i].lastTime) {
+										this.requestTime = res[i].lastTime
+									}
+								}
+							}
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			},
+			goRequest(){
+				uni.navigateTo({
+					url: '../friendRequest/friendRequest'
+				})
 			},
 			toSearch: function() {
 				uni.navigateTo({
@@ -104,9 +191,10 @@
 	.top-bar {
 		background: rgba(255, 255, 255, 0.96);
 		border-bottom: 1px solid $uni-border-color;
-.top-bar-center{
-	z-index: -100;
-}
+
+		.top-bar-center {
+			z-index: -100;
+		}
 	}
 
 	.main {
