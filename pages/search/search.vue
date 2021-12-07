@@ -37,10 +37,10 @@
 		data() {
 			return {
 				userarr: [],
-				uid:"",
-				imgurl:"",
-				token:"",
-				myname:""
+				uid: "",
+				imgurl: "",
+				token: "",
+				myname: ""
 			}
 		},
 		onLoad() {
@@ -48,6 +48,7 @@
 		},
 		methods: {
 			search: myfun.debounce(function(e) {
+					this.userarr = []
 				let searchVal = e.detail.value
 				if (searchVal.length > 0) {
 					this.searchUser(searchVal)
@@ -71,60 +72,104 @@
 					console.log(e)
 				}
 			},
-			search1(e) {
-				this.userarr = []
-				let searchVal = e.detail.value
-				if (searchVal.length > 0) {
-					this.searchUser(searchVal)
-				}
-			},
+			// search1(e) {
+			// 	this.userarr = []
+			// 	let searchVal = e.detail.value
+			// 	if (searchVal.length > 0) {
+			// 		this.searchUser(searchVal)
+			// 	}
+			// },
 			searchUser(e) {
 				uni.request({
 					url: this.serverUrl + "/search/user",
 					data: {
-						data:e,
+						data: e,
 						token: this.token
 					},
 					method: "POST",
 					success: data => {
+						console.log(data)
 						let status = data.data.status
 						if (status == 200) {
-							let res = data.data.result
+							let arr = data.data.result
+							// let exp = eval("/" + e + "/g")
+							for (let i = 0; i < arr.length; i++) {
+								if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
+									this.isFriend(arr[i],e)
+									// arr[i].imgurl = this.serverUrl + "/user/" + arr[i].imgurl
+									// arr[i].name = arr[i].name.replace(exp, "<span style='color:#4AAAFF'>" + e +
+									// 	"</span>")
+									// arr[i].email = arr[i].email.replace(exp, "<span style='color:#4AAAFF'>" +
+									// 	e + "</span>")
+									// this.userarr.push(arr[i])
+								}
+							}
 						} else if (status == 500) {
 							uni.showToast({
 								title: '服务器出错了',
 								icon: 'none',
 								duration: 1500
 							})
-						}else if (status == 300) {
+						} else if (status == 300) {
 							uni.navigateTo({
-							url:`../signin/signin?name=${this.myname}`
-						})
+								url: '../signin/signin?name=' + this.myname
+							})
 						}
 					}
 				})
 
-				// let arr = datas.getFrinedLists()
-				// let exp = eval("/" + e + "/g")
-				// for (let i = 0; i < arr.length; i++) {
-				// 	if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
-				// 		this.isFriend(arr[i])
-				// 		arr[i].imgurl = "../../static/img/" + arr[i].imgurl
-				// 		arr[i].name = arr[i].name.replace(exp, "<span style='color:#4AAAFF'>" + e + "</span>")
-				// 		arr[i].email = arr[i].email.replace(exp, "<span style='color:#4AAAFF'>" + e + "</span>")
-				// 		this.userarr.push(arr[i])
-				// 	}
-				// }
 			},
-			isFriend(e) {
+			isFriend(arr,e) {
+				let exp = eval("/" + e + "/g")
 				let tip = 0;
-				let arr = datas.isFriend();
-				for (let i = 0; i < arr.length; i++) {
-					if (arr[i].friend == e.id) {
-						tip = 1
-					}
+				if (arr._id == this.uid) {
+					tip = 2
+					arr.tip = tip
+					arr.imgurl = this.serverUrl + "/user/" + arr.imgurl
+					arr.name = arr.name.replace(exp, "<span style='color:#4AAAFF'>" + e +
+						"</span>")
+					arr.email = arr.email.replace(exp, "<span style='color:#4AAAFF'>" +
+						e + "</span>")
+					this.userarr.push(arr)
+				} else {
+					uni.request({
+						url: this.serverUrl + "/search/isFriend",
+						data: {
+							uid: this.uid,
+							fid: arr._id,
+							token: this.token
+						},
+						method: "POST",
+						success: data => {
+							console.log(data)
+							let status = data.data.status
+							if (status == 200) {
+								tip = 1
+							} else if (status == 400) {
+								//不是好友
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							} else if (status == 300) {
+								uni.navigateTo({
+									url: '../signin/signin?name=' + this.myname
+								})
+							}
+							arr.tip = tip
+							arr.imgurl = this.serverUrl + "/user/" + arr.imgurl
+							arr.name = arr.name.replace(exp, "<span style='color:#4AAAFF'>" + e +
+								"</span>")
+							arr.email = arr.email.replace(exp, "<span style='color:#4AAAFF'>" +
+								e+ "</span>")
+							this.userarr.push(arr)
+						}
+					})
 				}
-				e.tip = tip
+
+
 			},
 			backOne() {
 				uni.navigateBack({

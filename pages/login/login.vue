@@ -42,6 +42,13 @@
 					icon: 'none',
 					duration: 1500
 				})
+			}else{
+				this.user =e.name
+				uni.showToast({
+					title: '登录过期请重新登录',
+					icon: 'none',
+					duration: 1500
+				})
 			}
 		},
 		methods: {

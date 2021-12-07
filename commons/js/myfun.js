@@ -152,6 +152,7 @@ export default {
 			}
 			timer = setTimeout(() => {
 				fn.apply(that,args)
+				timer=null
 			}, delay)
 		}
 	}
