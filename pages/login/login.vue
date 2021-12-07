@@ -5,21 +5,21 @@
 				<view class="text">注册</view>
 			</view>
 		</view>
-		<view class="logo" @tap="test1">
+		<view class="logo">
 			<image src="../../static/index/logo.png" />
 		</view>
 		<view class="main">
 			<view class="title">登录</view>
 			<view class="slogan">您好，欢迎来到 YChat</view>
 			<view class="inputs">
-				<input type="text" class="user" placeholder="用户名/邮箱" placeholder-style="color:#aaa;font-weight:400;"
-					@blur="getuser" />
-				<input type="password" class="psw" placeholder="密码" placeholder-style="color:#aaa;font-weight:400;"
-					@blur="getpsw" />
+				<input type="text" v-model="user" class="user" placeholder="用户名/邮箱"
+					placeholder-style="color:#aaa;font-weight:400;" />
+				<input type="password" v-model="psw" class="psw" placeholder="密码"
+					placeholder-style="color:#aaa;font-weight:400;" />
 			</view>
-			<view class="tips">用户名或密码输入错误</view>
+			<view class="tips" :style="{display:mon}">用户名或密码输入错误</view>
 		</view>
-		<view class="submit" @tap="test">登录</view>
+		<view class="submit" @tap="login">登录</view>
 	</view>
 	</view>
 </template>
@@ -30,8 +30,19 @@
 			return {
 				user: "",
 				psw: "",
-				token: ''
+				token: '',
+				mon: 'none'
 			};
+		},
+		onLoad: function(e) {
+			if (e.user) {
+				this.user = e.user
+				uni.showToast({
+					title: '注册成功请登录',
+					icon: 'none',
+					duration: 1500
+				})
+			}
 		},
 		methods: {
 			tosign() {
@@ -39,76 +50,56 @@
 					url: "../sign/sign"
 				})
 			},
-			getuser(e) {
-				this.user = e.target.value
-			},
-			getpsw(e) {
-				this.psw = e.target.value
-			},
 			login() {
 				if (this.user && this.psw) {
 					uni.request({
-						url: "http://localhost:3000/signup/add",
+						url: this.serverUrl + "/signin/match",
 						data: {
-							mail: 'xiaohong@163.com',
-							name: '小红',
-							pwd: '12345678'
+							data: this.user,
+							pwd: this.psw
 						},
 						method: "POST",
 						success: data => {
-							console.log(data)
+							let status = data.data.status
+							if (status == 200) {
+								this.mon = 'none'
+								let res = data.data.back
+								try {
+									console.log('数据储存出错')
+									uni.setStorage({
+										key: 'user',
+										data: {
+											'id': res.id,
+											'name': res.name,
+											'imgurl': res.imgurl,
+											'token': res.token
+										},
+										success: function() {
+											console.log(uni.getStorageSync('user'))
+										}
+									})
+
+								} catch (e) {
+									console.log('数据储存出错')
+								}
+
+								uni.navigateTo({
+									url: '../index/index'
+								})
+							} else if (status == 400) {
+								this.mon = 'block'
+								this.psw = ''
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							}
 						}
 					})
 				}
 			},
-			test() {
-				uni.request({
-					url: "http://localhost:3000/index/updateMsg",
-					data: {
-						// name: '小白',
-						// mail:'xiaobai@163.com',
-						// pwd: '12345678'
-						// data:'小'
-						uid:'61ac70ab62510d4989e0767b',
-						fid:'61ac762f697451957fe34579'
-					},
-					method: "POST",
-					success: data => {
-						// this.token = data.data.back.token
-						console.log(data)
-					}
-				})
-
-			},
-			test1() {
-				uni.request({
-					url: "http://localhost:3000/index/unreadMsg",
-					data: {
-						uid:'61ac70ab62510d4989e0767b',
-						fid:'61ac762f697451957fe34579'
-					},
-					method: "POST",
-					success: data => {
-						console.log(data)
-					}
-				})
-
-			},
-			test2() {
-				uni.request({
-					url: "http://localhost:3000/friend/updateFriendState",
-					data: {
-						uid: "61ab3418c3058ec19dba1fb3",
-						fid:'61ab3b912b16076963bd99dd',
-						// msg:'好友申请3'
-					},
-					method: "POST",
-					success: data => {
-						console.log(data)
-					}
-				})
-
-			}
 		}
 	}
 </script>

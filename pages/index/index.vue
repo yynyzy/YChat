@@ -1,9 +1,9 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<navigator url="../userHome/userHome?id=aaa" hover-class="none" class="top-bar-left">
-				<image src="../../static/img/four.png" class="my-img"></image>
-			</navigator>
+			<view @tap="goimg"  class="top-bar-left">
+				<image :src="imgurl" class="my-img"></image>
+			</view>
 			<view class="top-bar-center">
 				<image class="logo" src="../../static/index/logo.png"></image>
 			</view>
@@ -44,22 +44,50 @@
 	export default {
 		data() {
 			return {
-				friends: []
+				friends: [],
+				imgurl: '',
+				uid: '',
+				token: '',
+				myname: ''
 			}
 		},
 		onLoad() {
 			this.getFriends()
+			this.getStorages()
 		},
 		methods: {
+			goimg(){
+				uni.navigateTo({
+					url: `../userHome/userHome?id=${this.uid}`
+				})
+				
+			},
 			changeTime: function(data) {
 				return myfun.dateTime(data)
+			},
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.imgurl = this.serverUrl + '/user/' + value.imgurl
+						this.token = value.token
+						this.myname = value.name
+
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
+					}
+				} catch (e) {
+					console.log(e)
+				}
 			},
 			getFriends: function() {
 				this.friends = datas.getFrinedLists()
 				for (let i = 0; i < this.friends.length; i++) {
 					this.friends[i].img = "../../static/img/" + this.friends[i].imgurl
 				}
-				// console.log(this.friends)
 			},
 			toSearch: function() {
 				uni.navigateTo({
@@ -74,9 +102,11 @@
 	@import "../../commons/css/mycss.scss";
 
 	.top-bar {
-	background: rgba(255, 255, 255, 0.96);	
-		border-bottom:1px solid $uni-border-color;
-
+		background: rgba(255, 255, 255, 0.96);
+		border-bottom: 1px solid $uni-border-color;
+.top-bar-center{
+	z-index: -100;
+}
 	}
 
 	.main {

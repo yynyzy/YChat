@@ -59,7 +59,7 @@ export default {
 		let nY = now.getFullYear();
 		let nM = now.getMonth() + 1;
 		let nD = now.getDate();
-	
+
 		//当天时间
 		if (D === nD && M === nM && Y === nY) {
 			if (h < 10) {
@@ -71,24 +71,24 @@ export default {
 			return h + ":" + m
 		}
 		//左天时间
-		if (D+1 === nD && M === nM && Y === nY) {
+		if (D + 1 === nD && M === nM && Y === nY) {
 			if (h < 10) {
 				h = '0' + h;
 			}
 			if (m < 10) {
 				m = '0' + m;
 			}
-			return "昨天"+h + ":" + m
-		}else if
+			return "昨天" + h + ":" + m
+		} else if
 		// 今年
-		 ( Y === nY) {
+		(Y === nY) {
 			if (h < 10) {
 				h = '0' + h;
 			}
 			if (m < 10) {
 				m = '0' + m;
 			}
-			return M +"月"+ D+"日"+h+":" + m
+			return M + "月" + D + "日" + h + ":" + m
 		} else {
 			//大于今年
 			if (h < 10) {
@@ -97,21 +97,20 @@ export default {
 			if (m < 10) {
 				m = '0' + m;
 			}
-			return Y + "" + M +"月"+ D+"日"+h+":" + m
+			return Y + "" + M + "月" + D + "日" + h + ":" + m
 		}
 	},
-	spaceTime(old,now){
-		old =new Date(old)
-		now =new Date(now)
-		var told =old.getTime()
-		var tnow =now.getTime()
-		if(told>(tnow+1000*60*5)){
+	spaceTime(old, now) {
+		old = new Date(old)
+		now = new Date(now)
+		var told = old.getTime()
+		var tnow = now.getTime()
+		if (told > (tnow + 1000 * 60 * 5)) {
 			return now
-		}else{
-			return''
+		} else {
+			return ''
 		}
 	},
-
 	detailTime(e) {
 		let old = new Date(e);
 		let now = new Date();
@@ -141,10 +140,21 @@ export default {
 		if (m < 10) {
 			m = '0' + m;
 		}
-		return Y + '-' + M + '-' + D +" "+ h + ":" + m
+		return Y + '-' + M + '-' + D + " " + h + ":" + m
+	},
+	debounce(fn, delay = 500) {
+		let timer = null
+		return function() {
+			let args = [...arguments]
+			let that =this
+			if (timer) {
+				clearTimeout(timer)
+			}
+			timer = setTimeout(() => {
+				fn.apply(that,args)
+			}, delay)
+		}
 	}
-
-
 
 
 }

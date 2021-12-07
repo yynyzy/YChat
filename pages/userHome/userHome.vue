@@ -25,7 +25,7 @@
 				</image>
 			</view>
 			<view class="user-imf">
-				<view class="name" >{{user.name}}</view>
+				<view class="name">{{user.name}}</view>
 				<view class="nick">昵称：{{user.nick}}</view>
 				<view class="intr">{{user.intr}}</view>
 			</view>
@@ -132,6 +132,37 @@
 				this.animationData2 = animation2.export()
 				this.animationData3 = animation3.export()
 				this.animationData4 = animation4.export()
+			},
+			getUser() {
+				uni.request({
+					url: this.serverUrl + "/user/detail",
+					data: {
+						id: this.id,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							res.imgurl = this.serverUrl + "/user/" + res.imgurl
+							if (typeof(res.explain)) {
+								res.explain = '这个人很懒，什么都没留下~'
+							}
+							if (this.markname.length == 0) {
+								this.markname = res.name
+							}
+							this.sexJudge(res.sex)
+							this.user=res
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						}
+					}
+				})
 			}
 		}
 	}
@@ -229,15 +260,16 @@
 
 
 	}
-	.bottom-bar{
 
-		.bottom-btn{
+	.bottom-bar {
+
+		.bottom-btn {
 			background: $uni-color-primary;
 			margin: 0 $uni-spacing-col-base;
 		}
 	}
 
-	
+
 
 	.add-misg {
 		position: fixed;

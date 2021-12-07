@@ -15,33 +15,63 @@
 				<view class="title" v-if="userarr.length>0">用户</view>
 				<view class="list user" v-for="(item,index) in userarr" :key="index">
 					<navigator url="../userHome/userHome?id=aaa" hover-class="none">
-					<image :src="item.imgurl"></image>
+						<image :src="item.imgurl"></image>
 					</navigator>
 					<view class=" names">
 						<view class="name" v-html="item.name"></view>
 						<view class="email" v-html="item.email"></view>
+					</view>
+					<view class="right-bt send" v-if="item.tip==1">发消息</view>
+					<view class="right-bt add" v-if="item.tip==0">加好友</view>
 				</view>
-				<view class="right-bt send" v-if="item.tip==1">发消息</view>
-				<view class="right-bt add"  v-if="item.tip==0">加好友</view>
 			</view>
 		</view>
-	</view>
 	</view>
 </template>
 
 <script>
 	import datas from "../../commons/js/datas.js"
+	import myfun from "../../commons/js/myfun.js"
+
 	export default {
 		data() {
 			return {
-				userarr: []
+				userarr: [],
+				uid:"",
+				imgurl:"",
+				token:"",
+				myname:""
 			}
 		},
 		onLoad() {
-
+			this.getStorages()
 		},
 		methods: {
-			search(e) {
+			search: myfun.debounce(function(e) {
+				let searchVal = e.detail.value
+				if (searchVal.length > 0) {
+					this.searchUser(searchVal)
+				}
+			}, 500),
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.imgurl = this.serverUrl + '/user/' + value.imgurl
+						this.token = value.token
+						this.myname = value.name
+
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
+					}
+				} catch (e) {
+					console.log(e)
+				}
+			},
+			search1(e) {
 				this.userarr = []
 				let searchVal = e.detail.value
 				if (searchVal.length > 0) {
@@ -49,31 +79,56 @@
 				}
 			},
 			searchUser(e) {
-				let arr = datas.getFrinedLists()
-				let exp=eval("/"+e+"/g")
+				uni.request({
+					url: this.serverUrl + "/search/user",
+					data: {
+						data:e,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						}else if (status == 300) {
+							uni.navigateTo({
+							url:`../signin/signin?name=${this.myname}`
+						})
+						}
+					}
+				})
+
+				// let arr = datas.getFrinedLists()
+				// let exp = eval("/" + e + "/g")
+				// for (let i = 0; i < arr.length; i++) {
+				// 	if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
+				// 		this.isFriend(arr[i])
+				// 		arr[i].imgurl = "../../static/img/" + arr[i].imgurl
+				// 		arr[i].name = arr[i].name.replace(exp, "<span style='color:#4AAAFF'>" + e + "</span>")
+				// 		arr[i].email = arr[i].email.replace(exp, "<span style='color:#4AAAFF'>" + e + "</span>")
+				// 		this.userarr.push(arr[i])
+				// 	}
+				// }
+			},
+			isFriend(e) {
+				let tip = 0;
+				let arr = datas.isFriend();
 				for (let i = 0; i < arr.length; i++) {
-					if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
-						this.isFriend(arr[i])
-						arr[i].imgurl = "../../static/img/" + arr[i].imgurl
-						arr[i].name =arr[i].name.replace(exp,"<span style='color:#4AAAFF'>"+e+"</span>")
-						arr[i].email =arr[i].email.replace(exp,"<span style='color:#4AAAFF'>"+e+"</span>")
-						this.userarr.push(arr[i])
+					if (arr[i].friend == e.id) {
+						tip = 1
 					}
 				}
+				e.tip = tip
 			},
-			isFriend(e){
-				let tip=0;
-				let arr =datas.isFriend();
-				for(let i=0;i<arr.length;i++){
-					if(arr[i].friend==e.id){
-						tip=1
-					}
-				}
-				e.tip =tip
-			},
-			backOne(){
+			backOne() {
 				uni.navigateBack({
-					detail:1
+					detail: 1
 				})
 			}
 		}
@@ -164,14 +219,16 @@
 				line-height: 48rpx;
 				margin-top: 16rpx;
 				text-align: center;
-				
+
 			}
-			.add{
+
+			.add {
 				background: $uni-color-primary;
 				color: $uni-text-color;
 			}
-			.send{
-				background: rgba(74,170,255,0.1);
+
+			.send {
+				background: rgba(74, 170, 255, 0.1);
 				color: $uni-color-success;
 			}
 		}
