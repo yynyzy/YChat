@@ -26,9 +26,10 @@
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
-					<image :src="user.imgurl" class="user-img" v-if="id!=uid"></image>
+					<image :src="cropFilePath" class="user-img" v-if="id!=uid"></image>
 				</view>
-				<view class="row" @tap="modify('签名',dataArr.sign,false)" :animation="animationData" v-if="id==uid">
+				<view class="row" @tap="modify('explain','签名',user.explain,false)" :animation="animationData"
+					v-if="id==uid">
 					<view class="title">签名</view>
 					<view class="cont">
 						{{user.explain}}
@@ -53,14 +54,14 @@
 				</view>
 			</view>
 			<view class="column">
-				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id==uid">
+				<view class="row" @tap="modify('name','昵称',user.name,false)" v-if="id==uid">
 					<view class="title">昵称</view>
 					<view class="cont">{{user.name}}</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
 				</view>
-				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id!=uid">
+				<view class="row" @tap="modify('markname','昵称',markname,false)" v-if="id!=uid">
 					<view class="title">
 						昵称
 					</view>
@@ -90,38 +91,58 @@
 						生日
 					</view>
 					<view class="cont">
-						<picker mode="date" :value="date" :start="startDate" :end="endDate" @change="bindDateChange">
+						<picker mode="date" :value="date" :start="startDate" :end="endDate" @change="bindDateChange"
+							v-if="id==uid">
 							<view class="uni-input">{{date}}</view>
 						</picker>
+						<view class="uni-input" v-if="id!=uid">{{date}}</view>
 					</view>
-					<view class="more">
+					<view class="more" v-if="id==uid">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
 				</view>
 			</view>
 			<view class="column">
-				<view class="row">
+				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id==uid">
 					<view class="title">
 						电话
 					</view>
 					<view class="cont">
-						{{dataArr.tell}}
+						{{user.phone}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
 				</view>
-				<view class="row">
+				<view class="row" v-if="id!=uid">
+					<view class="title">
+						电话
+					</view>
+					<view class="cont">
+						{{user.phone}}
+					</view>
+				</view>
+				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id==uid">
 					<view class="title">
 						邮箱
 					</view>
 					<view class="cont">
-						{{dataArr.email}}
+						{{user.email}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
 				</view>
+				<view class="row" v-if="id!=uid">
+					<view class="title">
+						邮箱
+					</view>
+					<view class="cont">
+						{{user.email}}
+					</view>
+				</view>
+			</view>
+			<view class="column" v-if="id==uid">
 				<view class="row">
 					<view class="title">
 						密码
@@ -134,9 +155,9 @@
 					</view>
 				</view>
 			</view>
-			<view class="btn2">
-				退出应用
-			</view>
+
+			<view class="btn2" v-if="id==uid">退出登录</view>
+			<view class="btn2" v-if="id!=uid">删除好友</view>
 		</view>
 		<view class="modify" :style="{bottom:-+widHeight+'px'}" :animation="animationData">
 			<view class="modify-header">
@@ -152,7 +173,7 @@
 			</view>
 			<view class="modify-main">
 				<input type="text" v-model="pwd" class="modify-pwd" placeholder="请输入原密码"
-					placeholder-style="color:#aaa;font-weight:400;" v-show="isPwd" />
+					placeholder-style="color:#aaa;font-weight:400;" :style="{display:isPwd}" />
 				<textarea v-model="data" class="modify-content" />
 			</view>
 		</view>
@@ -171,27 +192,20 @@
 				format: true
 			})
 			return {
-				dataArr: {
-					name: "小明",
-					sign: "加油努力姐姐哈哈哈哈哈啊啊啊啊啊啊啊",
-					zhuce: new Date(),
-					sex: "男",
-					birth: "1998-04-12",
-					tell: '12345678978',
-					email: "1601530255@qq.com"
-				},
 				modifyType: "",
 				cropFilePath: "../../static/img/three.png",
 				array: ["男", "女", "未知"],
 				index: 0,
 				date: currentDate,
 				tempFilePath: '',
-				data: "修改的内容",
+				data: "",
+				olddata: '',
 				animationData: {},
 				isModify: false,
-				pwd: "",
+				pwd: undefined,
+				type: "",
 				widHeight: "",
-				isPwd: false,
+				isPwd: 'none',
 				markname: "",
 				uid: "",
 				myname: "",
@@ -251,9 +265,17 @@
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
-							res.imgurl = this.serverUrl + "/user/" + res.imgurl
-							if (typeof(res.explain)) {
+							this.cropFilePath = this.serverUrl + "/user/" + res.imgurl
+							if (res.explain == undefined) {
 								res.explain = '这个人很懒，什么都没留下~'
+							}
+							if (res.birth == undefined) {
+								this.date = '0000-00-00'
+							} else {
+								this.date = res.birth
+							}
+							if (res.phone == undefined) {
+								res.phone = '000'
 							}
 							if (this.markname.length == 0) {
 								this.markname = res.name
@@ -297,7 +319,7 @@
 							let status = data.data.status
 							if (status == 200) {
 								let res = data.data.result
-								if (!typeof(res.markname)) {
+								if (res.markname != undefined) {
 									this.markname = res.markname
 								}
 							} else if (status == 500) {
@@ -305,6 +327,10 @@
 									title: '服务器出错了',
 									icon: 'none',
 									duration: 1500
+								})
+							} else if (status == 300) {
+								uni.navigateTo({
+									url: '../signin/signin?name=' + this.myname
 								})
 							}
 						}
@@ -316,11 +342,25 @@
 				return myFun.detailTime(date)
 			},
 			bindPickerChange: function(e) {
-				console.log('picker发送选择改变，携带值为', e.target.value)
+				let oldindex = this.index
 				this.index = e.target.value
+				if(this.index!=oldindex){
+					let sex ='asexual'
+					if(this.index ==0){
+						sex='male'
+					}else if(this.index ==1){
+						sex="female"
+					}
+					this.update(sex,'sex',undefined)
+				}
+				
 			},
 			bindDateChange: function(e) {
+					let olddate = this.date
 				this.date = e.target.value
+				if(this.date!=olddate){
+					this.update(this.date'birth',undefined)
+				}
 			},
 			getDate(type) {
 				const date = new Date();
@@ -341,7 +381,7 @@
 				uni.chooseImage({
 					count: 1, //默认9
 					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
-					sourceType: ['album'], //从相册选择
+					sourceType: ['album', 'camera'], //从相册选择
 					success: (res) => {
 						this.tempFilePath = res.tempFilePaths.shift()
 					}
@@ -351,19 +391,65 @@
 				this.tempFilePath = "";
 				this.cropFilePath = e.detail.tempFilePath;
 				uni.uploadFile({
-					url: "后端地址上传图片接口地址",
+					url: this.serverUrl + "/files/upload",
 					filePath: this.cropFilePath,
 					name: "file",
 					fileType: "image",
-					//formData:{},传递参数
+					formData: {
+						url: 'user',
+						name: this.uid,
+						token: this.token
+					},
 					success: (uploadFileRes) => {
 						var backstr = uploadFileRes.data;
 						//自定义操作
+						try {
+							console.log('数据储存出错')
+							uni.setStorage({
+								key: 'user',
+								data: {
+									'id': this.id,
+									'name': this.name,
+									'imgurl': backstr,
+									'token': this.token
+								}
+							})
+						} catch (e) {
+							console.log('数据储存出错')
+						}
+						this.update(backstr, 'imgurl', undefined)
 					},
 					fail(e) {
 						console.log("this is errormes " + e.message);
 					},
 				});
+			},
+			update(data, type, pwd) {
+				uni.request({
+					url: this.serverUrl + "/user/update",
+					data: {
+						id: this.uid,
+						data: data,
+						type: type,
+						psw: pwd,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../signin/signin?name=' + this.myname
+							})
+						}
+					}
+				})
 			},
 			cancel() {
 				console.log('canceled')
@@ -377,10 +463,17 @@
 					console.log(this.widHeight)
 				}).exec();
 			},
-			modify(type, data, isPwd) {
+			modify(t, type, data, isPwd) {
+				if (isPwd) {
+					this.isPwd = 'block'
+				} else {
+					this.isPwd = 'none'
+					this.pwd =undefined
+				}
+				this.type = t
 				this.modifyType = type
 				this.data = data
-				this.isPwd = isPwd
+				this.olddata = data
 				this.isModify = !this.isModify
 				var animation = uni.createAnimation({
 					duration: 300,
@@ -396,7 +489,51 @@
 
 			},
 			modifySubmit() {
+				if (this.data.length > 0 && this.data !== this.olddata) {
+					if (this.type == 'markname') {
+						this.updateFriendName()
+						this.markname = this.data
+					} else {
+						this.update(this.data, this.type, this.pwd)
+					}
+
+					this.user[this.type] = this.data
+				}
 				this.modify()
+			},
+			updateFriendName() {
+				if (this.data.length > 0 && this.data !== this.olddata) {
+					uni.request({
+						url: this.serverUrl + "/user/updatemarkname",
+						data: {
+							uid: this.uid,
+							fid: this.id,
+							name: this.data,
+							token: this.token
+						},
+						method: "POST",
+						success: data => {
+							let status = data.data.status
+							if (status == 200) {
+								let res = data.data.result
+								if (res.markname != undefined) {
+									this.markname = res.markname
+								}
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							} else if (status == 300) {
+								uni.navigateTo({
+									url: '../signin/signin?name=' + this.myname
+								})
+							}
+						}
+					})
+				}
+
 			}
 		}
 
@@ -410,6 +547,10 @@
 
 	.top-bar {
 		background: rgba(255, 255, 255, 0.96);
+
+		.top-bar-center {
+			z-index: -100;
+		}
 	}
 
 	.main {

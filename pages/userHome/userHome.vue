@@ -13,7 +13,7 @@
 		</view>
 		<view class="bg">
 			<view class="bg-bai" :animation="animationData4">
-				<image src="../../static/img/three.png" class="bg-img" mode="aspectFill"></image>
+				<image :src="user.imgurl" class="bg-img" mode="aspectFill"></image>
 			</view>
 		</view>
 		<view class="main">
@@ -64,7 +64,7 @@
 				seximg: '../../static/userhome/asexua.png',
 				sexBg: 'rgba(39, 40, 50, 1)',
 				relation: "",
-				addHeight: "",
+				addHeight: "1000",
 				animationData: {},
 				animationData1: {},
 				animationData2: {},

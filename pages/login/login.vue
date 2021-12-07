@@ -82,7 +82,7 @@
 											'token': res.token
 										},
 										success: function() {
-											console.log(uni.getStorageSync('user'))
+											
 										}
 									})
 
