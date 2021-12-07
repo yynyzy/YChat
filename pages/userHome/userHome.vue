@@ -4,9 +4,9 @@
 			<view class="top-bar-left" @tap="backOne">
 				<image src="../../static/common/back.png" class="back-img"></image>
 			</view>
-
+			<view class="top-bar-center"></view>
 			<view class="top-bar-right">
-				<view class="more-img">
+				<view class="more-img" v-if="relation ==0|| relation==1" @tap="userDatail">
 					<image src="../../static/userhome/more.png"></image>
 				</view>
 			</view>
@@ -19,19 +19,19 @@
 		<view class="main">
 			<view class="user-header">
 				<view class="sex" :style="{background:sexBg}" :animation="animationData3">
-					<image src="../../static/userhome/female.png"></image>
+					<image :src="seximg"></image>
 				</view>
-				<image src="../../static/img/three.png" class="user-img" mode="aspectFill" :animation="animationData2">
+				<image :src="user.imgurl" class="user-img" mode="aspectFill" :animation="animationData2">
 				</image>
 			</view>
 			<view class="user-imf">
-				<view class="name">{{user.name}}</view>
-				<view class="nick">昵称：{{user.nick}}</view>
-				<view class="intr">{{user.intr}}</view>
+				<view class="name">{{markname}}</view>
+				<view class="nick">昵称：{{user.name}}</view>
+				<view class="intr">{{user.explain}}</view>
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn btn1" @tap="addFriendAnimation" v-if="relation == 2">
+			<view class="bottom-btn btn1" @tap="addFriendBtn" v-if="relation == 2">
 				加为好友
 			</view>
 			<view class="bottom-btn btn1" v-if="relation == 1">
@@ -42,15 +42,11 @@
 			<view class="name">
 				{{user.name}}
 			</view>
-			<textarea :value="myname+'请求加为好友~'" maxlength="120" class="add-main" />
+			<textarea v-model="msg" :value="myname+'请求加为好友~'" maxlength="120" class="add-main" :cursor-spacing="0" />
 		</view>
 		<view class="add-bt" :animation="animationData1">
-			<view class="close" @tap="addFriendAnimation">
-				取消
-			</view>
-			<view class="send">
-				发送
-			</view>
+			<view class="close" @tap="addFriendAnimation">取消</view>
+			<view class="send" @tap="addSubmit()">发送</view>
 		</view>
 	</view>
 </template>
@@ -59,8 +55,15 @@
 	export default {
 		data() {
 			return {
-				sexBg: 'rgba(255, 93, 91, 1)',
+				id: "",
+				uid: "",
+				token: "",
 				myname: "春雨",
+				markname: "",
+				user: {},
+				seximg: '../../static/userhome/asexua.png',
+				sexBg: 'rgba(39, 40, 50, 1)',
+				relation: "",
 				addHeight: "",
 				animationData: {},
 				animationData1: {},
@@ -68,17 +71,40 @@
 				animationData3: {},
 				animationData4: {},
 				isAdd: false,
-				user: {
-					name: "致远",
-					nick: "理想乡",
-					intr: "众神眷恋之地，严致远与严以诺，众神眷恋之地，严致远与严以诺，众神眷恋之地，严致远与严以诺，众神眷恋之地"
-				}
+				msg: ""
 			}
+		},
+		onLoad(e) {
+			this.id = e.id
+			this.getStorages()
+			this.getUser()
+			this.judgeFriend()
 		},
 		onReady() {
 			this.getElementStyle()
 		},
 		methods: {
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.token = value.token
+						this.myname = value.name
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
+					}
+				} catch (e) {
+					console.log(e)
+				}
+			},
+			userDatail(){
+				uni.navigateTo({
+					url: '../userdetails/userdetails?id=' + this.id
+				})
+			},
 			backOne() {
 				uni.navigateBack({
 					detail: 1
@@ -153,7 +179,80 @@
 								this.markname = res.name
 							}
 							this.sexJudge(res.sex)
-							this.user=res
+							this.user = res
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 2000
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../signin/signin?name=' + this.myname
+							})
+						}
+					}
+				})
+			},
+			sexJudge(e) {
+				if (e == 'female') {
+					this.seximg = '../../static/userhome/female.png'
+					this.sexBg = 'rgba(255,93,91,1)'
+				} else if (e == 'male') {
+					this.seximg = '../../static/userhome/male.png'
+					this.sexBg = 'rgba(87,153,255,1)'
+				} else {
+					this.seximg = '../../static/userhome/asexual.png'
+					this.sexBg = 'rgba(39,40,50,1)'
+				}
+			},
+			judgeFriend() {
+				if (this.id == this.uid) {
+					this.relation = 0
+				} else {
+					uni.request({
+						url: this.serverUrl + "/search/isFriend",
+						data: {
+							uid: this.uid,
+							fid: this.id,
+							token: this.token
+						},
+						method: "POST",
+						success: data => {
+							let status = data.data.status
+							if (status == 200) {
+								this.relation = 1
+								this.getMarkName()
+							} else if (status == 400) {
+								this.relation = 2
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							}
+						}
+					})
+
+				}
+			},
+			getMarkName() {
+				uni.request({
+					url: this.serverUrl + "/user/getmarkname",
+					data: {
+						uid: this.uid,
+						fid: this.id,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							if (!typeof(res.markname)) {
+								this.markname = res.markname
+							}
 						} else if (status == 500) {
 							uni.showToast({
 								title: '服务器出错了',
@@ -163,6 +262,46 @@
 						}
 					}
 				})
+			},
+			addFriendBtn(fid) {
+				this.fid = fid
+				this.msg = this.myname + ' 用户请求添加好友!~'
+				this.addFriendAnimation()
+			},
+			addSubmit(fid) {
+				if (this.msg.length > 0) {
+					uni.request({
+						url: this.serverUrl + "/friend/applyfriend",
+						data: {
+							uid: this.uid,
+							fid: this.id,
+							token: this.token,
+							msg: this.msg
+						},
+						method: "POST",
+						success: data => {
+
+							let status = data.data.status
+							if (status == 200) {
+								uni.showToast({
+									title: '好友请求发生成功',
+									icon: 'none',
+									duration: 1500
+								})
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							} else if (status == 300) {
+								uni.navigateTo({
+									url: '../signin/signin?name=' + this.myname
+								})
+							}
+						}
+					})
+				}
 			}
 		}
 	}
@@ -170,7 +309,9 @@
 
 <style lang="scss">
 	@import "../../commons/css/mycss.scss";
-
+.top-bar-center{
+	z-index: -100;
+}
 	.bg {
 		position: fixed;
 		z-index: -2;

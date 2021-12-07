@@ -14,7 +14,7 @@
 			<view class="search-user result">
 				<view class="title" v-if="userarr.length>0">用户</view>
 				<view class="list user" v-for="(item,index) in userarr" :key="index">
-					<navigator url="../userHome/userHome?id=aaa" hover-class="none">
+					<navigator :url="'../userHome/userHome?id='+item._id" hover-class="none">
 						<image :src="item.imgurl"></image>
 					</navigator>
 					<view class=" names">
@@ -22,7 +22,17 @@
 						<view class="email" v-html="item.email"></view>
 					</view>
 					<view class="right-bt send" v-if="item.tip==1">发消息</view>
-					<view class="right-bt add" v-if="item.tip==0">加好友</view>
+					<view class="right-bt add" v-if="item.tip==0" @tap="addFriendBtn(item._id)">加好友</view>
+				</view>
+			</view>
+			<view class="modify" :style="{bottom:-+widHeight+'px'}" :animation="animationData">
+				<view class="modify-header">
+					<view class="close" @tap="modify()">取消</view>
+					<view class="title">添加好友</view>
+					<view class="define" @tap="addSubmit()">确定</view>
+				</view>
+				<view class="modify-main">
+					<textarea v-model="msg" class="modify-content" />
 				</view>
 			</view>
 		</view>
@@ -38,13 +48,22 @@
 			return {
 				userarr: [],
 				uid: "",
-				imgurl: "",
+				fid:"",
+				// imgurl: "",
 				token: "",
-				myname: ""
+				myname: "",
+				animationData: {},
+				isModify: false,
+				widHeight: "",
+				msg:"",
+				data:""
 			}
 		},
 		onLoad() {
 			this.getStorages()
+		},
+		onReady(){
+			this.getElementStyle()
 		},
 		methods: {
 			search: myfun.debounce(function(e) {
@@ -54,12 +73,79 @@
 					this.searchUser(searchVal)
 				}
 			}, 500),
+			getElementStyle() {
+				const query = uni.createSelectorQuery().in(this);
+				query.select('.modify').boundingClientRect(data => {
+					console.log("得到布局位置信息" + JSON.stringify(data));
+					console.log("节点离页面顶部的距离为" + data.top);
+					this.widHeight = data.height
+					console.log(this.widHeight)
+				}).exec();
+			},
+			modify(type,data,isPwd) {
+				this.data = data
+				this.isModify = !this.isModify
+				var animation = uni.createAnimation({
+					duration: 300,
+					timingFunction: "ease"
+				})
+				if (this.isModify) {
+					animation.bottom(0).step()
+				} else {
+					animation.bottom(-this.widHeight).step()
+			
+				}
+				this.animationData = animation.export()
+			
+			},
+			addFriendBtn(fid) {
+				this.fid = fid
+				this.msg = this.myname+' 用户请求添加好友!~'
+				this.modify()
+			},
+			addSubmit(fid){
+				if(this.msg.length>0){
+					this.modify()
+					uni.request({
+							url: this.serverUrl + "/friend/applyfriend",
+							data: {
+								uid:this.uid,
+								fid:this.fid,
+								token: this.token,
+								msg:this.msg
+							},
+							method: "POST",
+							success: data => {
+								
+								let status = data.data.status
+								if (status == 200) {
+									uni.showToast({
+										title: '好友请求发生成功',
+										icon: 'none',
+										duration: 1500
+									})
+								} else if (status == 500) {
+									uni.showToast({
+										title: '服务器出错了',
+										icon: 'none',
+										duration: 1500
+									})
+								} else if (status == 300) {
+									uni.navigateTo({
+										url: '../signin/signin?name=' + this.myname
+									})
+								}
+							}
+						})
+					
+				}
+			},
 			getStorages: function() {
 				try {
 					const value = uni.getStorageSync('user')
 					if (value) {
 						this.uid = value.id
-						this.imgurl = this.serverUrl + '/user/' + value.imgurl
+						// this.imgurl = this.serverUrl + '/user/' + value.imgurl
 						this.token = value.token
 						this.myname = value.name
 
@@ -72,13 +158,7 @@
 					console.log(e)
 				}
 			},
-			// search1(e) {
-			// 	this.userarr = []
-			// 	let searchVal = e.detail.value
-			// 	if (searchVal.length > 0) {
-			// 		this.searchUser(searchVal)
-			// 	}
-			// },
+
 			searchUser(e) {
 				uni.request({
 					url: this.serverUrl + "/search/user",
@@ -88,21 +168,11 @@
 					},
 					method: "POST",
 					success: data => {
-						console.log(data)
 						let status = data.data.status
 						if (status == 200) {
 							let arr = data.data.result
-							// let exp = eval("/" + e + "/g")
 							for (let i = 0; i < arr.length; i++) {
-								if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
-									this.isFriend(arr[i],e)
-									// arr[i].imgurl = this.serverUrl + "/user/" + arr[i].imgurl
-									// arr[i].name = arr[i].name.replace(exp, "<span style='color:#4AAAFF'>" + e +
-									// 	"</span>")
-									// arr[i].email = arr[i].email.replace(exp, "<span style='color:#4AAAFF'>" +
-									// 	e + "</span>")
-									// this.userarr.push(arr[i])
-								}
+								this.isFriend(arr[i],e)
 							}
 						} else if (status == 500) {
 							uni.showToast({
@@ -141,7 +211,6 @@
 						},
 						method: "POST",
 						success: data => {
-							console.log(data)
 							let status = data.data.status
 							if (status == 200) {
 								tip = 1
@@ -275,6 +344,77 @@
 			.send {
 				background: rgba(74, 170, 255, 0.1);
 				color: $uni-color-success;
+			}
+		}
+	}
+	.modify {
+		position: fixed;
+		z-index: 1003;
+		// top: 0;
+		left: 0;
+		height: 100%;
+		width: 100%;
+		background-color: #fff;
+	
+		.modify-header {
+			border-bottom: 1px solid $uni-border-color;
+			width: 100%;
+			height: 88rpx;
+			padding-top: var(--status-bar-height);
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+	
+			.close {
+				padding-left: 32rpx;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color;
+				line-height: 44px;
+			}
+	
+			.title {
+				flex: auto;
+				text-align: center;
+				font-size: 40rpx;
+				color: $uni-text-color;
+				line-height: 88rpx;
+			}
+	
+			.define {
+				padding-right: $uni-spacing-col-base;
+				font-size: $uni-font-size-lg;
+				color: $uni-color-success;
+				line-height: 44px;
+			}
+		}
+	
+		.modify-main {
+			display: flex;
+			padding: $uni-spacing-col-base;
+			flex-direction: column;
+	
+			.modify-pwd {
+				padding: 0 20rpx;
+				margin-bottom: $uni-spacing-col-base;
+				height: 88rpx;
+				background: $uni-bg-color-grey;
+				border-radius: $uni-border-radius-base;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color;
+				line-height: 88rpx;
+			}
+	
+			.modify-content {
+				padding: 16rpx 20rpx;
+				flex: auto;
+				width: 100%;
+				box-sizing: border-box;
+				height: 386px;
+				background: $uni-bg-color-grey;
+				border-radius: $uni-border-radius-base;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color;
+				line-height: 44rpx;
 			}
 		}
 	}

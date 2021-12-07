@@ -19,23 +19,28 @@
 			<view class="column heads">
 				<view class="row head">
 					<view class="title">头像</view>
-					<view class="user-head">
+					<view class="user-head" v-if="id==uid">
 						<image-cropper :src="tempFilePath" @confirm="confirm" @cancel="cancel"></image-cropper>
 						<image :src="cropFilePath" @tap="upload" class="user-img"></image>
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
+					<image :src="user.imgurl" class="user-img" v-if="id!=uid"></image>
 				</view>
-				<view class="row" @tap="modify('签名',dataArr.sign,false)" :animation="animationData">
-					<view class="title">
-						签名
-					</view>
+				<view class="row" @tap="modify('签名',dataArr.sign,false)" :animation="animationData" v-if="id==uid">
+					<view class="title">签名</view>
 					<view class="cont">
-						{{dataArr.sign}}
+						{{user.explain}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
+					</view>
+				</view>
+				<view class="row" v-if="id!=uid">
+					<view class="title">签名</view>
+					<view class="cont">
+						{{user.explain}}
 					</view>
 				</view>
 				<view class="row">
@@ -43,17 +48,24 @@
 						注册
 					</view>
 					<view class="cont">
-						{{timeChange(dataArr.zhuce)}}
+						{{timeChange(user.time)}}
 					</view>
 				</view>
 			</view>
 			<view class="column">
-				<view class="row" @tap="modify('昵称',dataArr.name,false)">
+				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id==uid">
+					<view class="title">昵称</view>
+					<view class="cont">{{user.name}}</view>
+					<view class="more">
+						<image src="../../static/common/more.png" mode="aspectFill"></image>
+					</view>
+				</view>
+				<view class="row" @tap="modify('昵称',dataArr.name,false)" v-if="id!=uid">
 					<view class="title">
 						昵称
 					</view>
 					<view class="cont">
-						{{dataArr.name}}
+						{{markname}}
 					</view>
 					<view class="more">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
@@ -64,11 +76,12 @@
 						性别
 					</view>
 					<view class="cont">
-						<picker @change="bindPickerChange" :value="index" :range="array">
+						<picker @change="bindPickerChange" :value="index" :range="array" v-if="id==uid">
 							<view class="uni-input">{{array[index]}}</view>
 						</picker>
+						<view class="uni-input" v-if="id!=uid">{{array[index]}}</view>
 					</view>
-					<view class="more">
+					<view class="more" v-if="id==uid">
 						<image src="../../static/common/more.png" mode="aspectFill"></image>
 					</view>
 				</view>
@@ -158,16 +171,16 @@
 				format: true
 			})
 			return {
-				dataArr:{
-					name:"小明",
-					sign:"加油努力姐姐哈哈哈哈哈啊啊啊啊啊啊啊",
-					zhuce:new Date(),
-					sex:"男",
-					birth:"1998-04-12",
-					tell:'12345678978',
-					email:"1601530255@qq.com"
+				dataArr: {
+					name: "小明",
+					sign: "加油努力姐姐哈哈哈哈哈啊啊啊啊啊啊啊",
+					zhuce: new Date(),
+					sex: "男",
+					birth: "1998-04-12",
+					tell: '12345678978',
+					email: "1601530255@qq.com"
 				},
-				modifyType:"",
+				modifyType: "",
 				cropFilePath: "../../static/img/three.png",
 				array: ["男", "女", "未知"],
 				index: 0,
@@ -178,7 +191,13 @@
 				isModify: false,
 				pwd: "",
 				widHeight: "",
-				isPwd:false
+				isPwd: false,
+				markname: "",
+				uid: "",
+				myname: "",
+				token: "",
+				id: "",
+				user: {},
 			}
 		},
 		computed: {
@@ -189,6 +208,12 @@
 				return this.getDate('end');
 			}
 		},
+		onLoad(e) {
+			this.id = e.id
+			this.getStorages()
+			this.getUser()
+			this.getMarkName()
+		},
 		onReady() {
 			this.getElementStyle()
 		},
@@ -198,7 +223,96 @@
 					detail: 1
 				})
 			},
-			timeChange(date){
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.token = value.token
+						this.myname = value.name
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
+					}
+				} catch (e) {
+					console.log(e)
+				}
+			},
+			getUser() {
+				uni.request({
+					url: this.serverUrl + "/user/detail",
+					data: {
+						id: this.id,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							res.imgurl = this.serverUrl + "/user/" + res.imgurl
+							if (typeof(res.explain)) {
+								res.explain = '这个人很懒，什么都没留下~'
+							}
+							if (this.markname.length == 0) {
+								this.markname = res.name
+							}
+							this.sexJudge(res.sex)
+							this.user = res
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 2000
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../signin/signin?name=' + this.myname
+							})
+						}
+					}
+				})
+			},
+			sexJudge(e) {
+				if (e == 'female') {
+					this.index = 1
+				} else if (e == 'male') {
+					this.index = 0
+				} else {
+					this.index = 2
+				}
+			},
+			getMarkName() {
+				if (this.id !== this.uid) {
+					uni.request({
+						url: this.serverUrl + "/user/getmarkname",
+						data: {
+							uid: this.uid,
+							fid: this.id,
+							token: this.token
+						},
+						method: "POST",
+						success: data => {
+							let status = data.data.status
+							if (status == 200) {
+								let res = data.data.result
+								if (!typeof(res.markname)) {
+									this.markname = res.markname
+								}
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							}
+						}
+					})
+				}
+
+			},
+			timeChange(date) {
 				return myFun.detailTime(date)
 			},
 			bindPickerChange: function(e) {
@@ -263,7 +377,7 @@
 					console.log(this.widHeight)
 				}).exec();
 			},
-			modify(type,data,isPwd) {
+			modify(type, data, isPwd) {
 				this.modifyType = type
 				this.data = data
 				this.isPwd = isPwd
@@ -308,6 +422,7 @@
 			flex-direction: column;
 			padding-top: 12rpx;
 			width: 100%;
+
 			// border-bottom: 1px solid $uni-border-color;
 			.heads {}
 
