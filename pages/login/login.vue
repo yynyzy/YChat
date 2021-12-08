@@ -72,7 +72,6 @@
 								this.mon = 'none'
 								let res = data.data.back
 								try {
-									console.log('数据储存出错')
 									uni.setStorage({
 										key: 'user',
 										data: {

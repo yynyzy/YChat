@@ -155,6 +155,31 @@ export default {
 				timer=null
 			}, delay)
 		}
+	},
+	paixu(arr,obj,tip){
+		var s;
+		if(tip==0){
+			for(let i =1;i<arr.length;i++){
+				for(let j=i;j>0;j--){
+					if(arr[j][obj]>arr[j-1][obj]){
+						s=arr[j]
+						arr[j]=arr[j-1]
+						arr[j-1]=s
+					}
+				}
+			}
+		}else if(tip==1){
+			for(let i =1;i<arr.length;i++){
+				for(let j=i;j>0;j--){
+					if(arr[j][obj]<arr[j-1][obj]){
+						s=arr[j]
+						arr[j]=arr[j-1]
+						arr[j-1]=s
+					}
+				}
+			}
+		}
+		return arr
 	}
 
 

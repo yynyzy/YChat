@@ -17,6 +17,21 @@
 			</view>
 		</view>
 		<view class="main">
+			<view class="refresh" v-if="!refresh">
+				<image src="../../static/index/refresh.png"></image>
+				<view class="ref-title">
+					下拉刷新
+				</view>
+			</view>
+			<view class="noone" v-if="noone">
+				<image src="../../static/index/noone.png" mode="aspectFill"></image>
+				<view class="notitle">
+					你还没有好友
+				</view>
+				<view class="search-bt" @tap="toSearch">
+					搜索好友
+				</view>
+			</view>
 			<view class="friends" v-if="requestData>0" @tap="goRequest">
 				<view class="friend-list">
 					<view class="friend-list-l">
@@ -32,16 +47,16 @@
 					</view>
 				</view>
 			</view>
-			<view class="friends" v-if="requestData>0">
+			<view class="friends">
 				<view class="friend-list" v-for="(item,index) in friends" :key="item.id">
 					<view class="friend-list-l">
 						<text class="tip" v-if="item.tip>0">{{item.tip<99?item.tip:"99+"}}</text>
-						<image :src="item.img"></image>
+						<image :src="item.imgurl"></image>
 					</view>
 					<view class="friend-list-r">
 						<view class="top">
 							<view class="name">{{item.name}}</view>
-							<view class="time">{{changeTime(item.time)}}</view>
+							<view class="time">{{changeTime(item.lastTime)}}</view>
 						</view>
 						<view class="news">{{item.news}}</view>
 					</view>
@@ -64,14 +79,25 @@
 				token: '',
 				myname: '',
 				requestData: 0,
-				requestTime: ''
+				requestTime: '',
+				refresh: false,
+				noone: false
 			}
 		},
 		onLoad() {
 			this.getStorages()
-			this._getFriends()	
 			this.friendRequest()
 			this.getFriends()
+		},
+		onPullDownRefresh() {
+			// this.refresh=false
+			this.friends = []
+			this.getStorages()
+			this.friendRequest()
+			this.getFriends()
+			setTimeout(() => {
+				uni.stopPullDownRefresh()
+			}, 1000)
 		},
 		methods: {
 			goimg() {
@@ -101,12 +127,6 @@
 					console.log(e)
 				}
 			},
-			_getFriends: function() {
-				this.friends = datas.getFrinedLists()
-				for (let i = 0; i < this.friends.length; i++) {
-					this.friends[i].img = "../../static/img/" + this.friends[i].imgurl
-				}
-			},
 			getFriends: function() {
 				uni.request({
 					url: this.serverUrl + "/index/getFriend",
@@ -117,10 +137,28 @@
 					},
 					method: "POST",
 					success: data => {
+						this.refresh = true
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
 							console.log(res)
+							if (res.length > 0) {
+								this.noone = false
+								for (let i = 0; i < res.length; i++) {
+									res[i].imgurl = this.serverUrl + '/user/' + res[i].imgurl
+									if (res[i].markname) {
+										res[i].name = res[i].markname
+									}
+									this.friends.push(res[i])
+								}
+								this.friends = myfun.paixu(this.friends, 'lastTime', 0)
+								for (let i = 0; i < this.friends.length; i++) {
+									this.getLastMsg(this.friends, i)
+									this.getUnread(this.friends, i)
+								}
+							} else {
+								this.noone = true
+							}
 						} else if (status == 500) {
 							uni.showToast({
 								title: '服务器出错了',
@@ -145,17 +183,21 @@
 					},
 					method: "POST",
 					success: data => {
+						this.refresh = true
 						let status = data.data.status
 						if (status == 200) {
+							this.noone = false
 							let res = data.data.result
 							this.requestData = res.length
 							if (res.length > 0) {
 								this.requestTime = res[0].lastTime
-								for (let i = 1;i < res.length; i++) {
+								for (let i = 1; i < res.length; i++) {
 									if (this.requestTime < res[i].lastTime) {
 										this.requestTime = res[i].lastTime
 									}
 								}
+							} else {
+								this.noone = true
 							}
 						} else if (status == 500) {
 							uni.showToast({
@@ -171,9 +213,125 @@
 					}
 				})
 			},
-			goRequest(){
+			goRequest() {
 				uni.navigateTo({
 					url: '../friendRequest/friendRequest'
+				})
+			},
+			getGroup: function() {
+				uni.request({
+					url: this.serverUrl + "/index/getGroup",
+					data: {
+						uid: this.uid,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						this.refresh = true
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							console.log(res)
+							if (res.length > 0) {
+								this.noone = false
+								for (let i = 0; i < res.length; i++) {
+									res[i].imgurl = this.serverUrl + '/user/' + res[i].imgurl
+									if (res[i].markname) {
+										res[i].name = res[i].markname
+									}
+									this.friends.push(res[i])
+								}
+								this.friends = myfun.paixu(this.friends, 'lastTime', 0)
+								for (let i = 0; i < this.friends.length; i++) {
+									this.getLastMsg(this.friends, i)
+									this.getUnread(this.friends, i)
+								}
+							} else {
+								this.noone = true
+							}
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了	getGroup',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			},
+			getLastMsg(arr, i) {
+				uni.request({
+					url: this.serverUrl + "/index/getLastMsg",
+					data: {
+						uid: this.uid,
+						fid: arr[i].id,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						this.refresh = true
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							if (res.types == 0) {
+
+							} else if (res.types == 1) {
+								res.message = '[图片]'
+							} else if (res.types == 2) {
+								res.message = '[音频]'
+							} else if (res.types == 3) {
+								res.message = '[位置]'
+							}
+							let e = arr[i]
+							e.msg = res.message
+							arr.splice(i, 1, e)
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			},
+			getUnread(arr, i) {
+				uni.request({
+					url: this.serverUrl + "/index/unreadMsg",
+					data: {
+						uid: this.uid,
+						fid: arr[i].id,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						this.refresh = true
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							let e = arr[i]
+							e.msg = res
+							arr.splice(i, 1, e)
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
 				})
 			},
 			toSearch: function() {
@@ -200,6 +358,52 @@
 	.main {
 		padding-top: 104rpx;
 		padding-bottom: $uni-spacing-col-base
+	}
+
+	.refresh {
+		text-align: center;
+		padding-top: 480rpx;
+
+		image {
+			width: 32rpx;
+			height: 32rpx;
+		}
+
+		.ref-title {
+			padding-top: 10;
+			font-size: $uni-font-size-base;
+			color: rgba(39, 40, 50, 0.4);
+			line-height: 40rpx;
+		}
+	}
+
+	.noone {
+		text-align: center;
+		padding-top: 400rpx;
+
+		image {
+			width: 158rpx;
+			height: 250rpx;
+		}
+
+		.notitle {
+			padding: 32rpx 0;
+			font-size: $uni-font-size-base;
+			color: rgba(39, 40, 50, 0.4);
+			line-height: 40rpx;
+		}
+
+		.search-bt {
+			display: inline-block;
+			width: 240rpx;
+			height: 96rpx;
+			background: $uni-color-primary;
+			box-shadow: 0 52rpx 36rpx -32rpx rgba(255, 228, 49, 0.4);
+			border-radius: 48rpx;
+			font-size: $uni-font-size-base;
+			color: $uni-text-color;
+			line-height: 96rpx;
+		}
 	}
 
 	.friend-list {
