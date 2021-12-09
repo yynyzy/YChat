@@ -48,9 +48,9 @@
 				</view>
 			</view>
 			<view class="friends">
-				<view class="friend-list" v-for="(item,index) in friends" :key="item.id">
+				<view class="friend-list" v-for="(item,index) in friends" :key="index" @tap="toChatRoom(item)">
 					<view class="friend-list-l">
-						<text class="tip" v-if="item.tip>0">{{item.tip<99?item.tip:"99+"}}</text>
+						<text class="tip" v-if="item.tip>0">{{item.tip}}</text>
 						<image :src="item.imgurl"></image>
 					</view>
 					<view class="friend-list-r">
@@ -58,7 +58,7 @@
 							<view class="name">{{item.name}}</view>
 							<view class="time">{{changeTime(item.lastTime)}}</view>
 						</view>
-						<view class="news">{{item.news}}</view>
+						<view class="news">{{item.msg}}</view>
 					</view>
 				</view>
 			</view>
@@ -88,6 +88,8 @@
 			this.getStorages()
 			this.friendRequest()
 			this.getFriends()
+			this.join(this.uid)
+			this.sockettest()
 		},
 		onPullDownRefresh() {
 			// this.refresh=false
@@ -114,7 +116,7 @@
 					const value = uni.getStorageSync('user')
 					if (value) {
 						this.uid = value.id
-						this.imgurl = this.serverUrl + '/user/' + value.imgurl
+						this.imgurl = this.serverUrl + value.imgurl
 						this.token = value.token
 						this.myname = value.name
 
@@ -145,7 +147,7 @@
 							if (res.length > 0) {
 								this.noone = false
 								for (let i = 0; i < res.length; i++) {
-									res[i].imgurl = this.serverUrl + '/user/' + res[i].imgurl
+									res[i].imgurl = this.serverUrl + res[i].imgurl
 									if (res[i].markname) {
 										res[i].name = res[i].markname
 									}
@@ -235,7 +237,7 @@
 							if (res.length > 0) {
 								this.noone = false
 								for (let i = 0; i < res.length; i++) {
-									res[i].imgurl = this.serverUrl + '/user/' + res[i].imgurl
+									res[i].imgurl = this.serverUrl + res[i].imgurl
 									if (res[i].markname) {
 										res[i].name = res[i].markname
 									}
@@ -338,7 +340,27 @@
 				uni.navigateTo({
 					url: "../search/search"
 				})
+			},
+			toChatRoom(data) {
+				uni.navigateTo({
+					url: "../chatroom/chatroom?id=" + data.id + '&name=' + data.name + '&img=' + data.imgurl +
+						'&type=' + data.type
+				})
+			},
+
+			//socket模块
+			//用户登录socket注册
+			join(uid) {
+				this.socket.emit('login', uid)
+			},
+			sockettest() {
+				this.socket.on('msg', (id)=>{
+					console.log(id)
+				})
 			}
+
+
+
 		}
 	}
 </script>

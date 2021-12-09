@@ -145,7 +145,7 @@
 					const value = uni.getStorageSync('user')
 					if (value) {
 						this.uid = value.id
-						// this.imgurl = this.serverUrl + '/user/' + value.imgurl
+				
 						this.token = value.token
 						this.myname = value.name
 
@@ -195,7 +195,7 @@
 				if (arr._id == this.uid) {
 					tip = 2
 					arr.tip = tip
-					arr.imgurl = this.serverUrl + "/user/" + arr.imgurl
+					arr.imgurl = this.serverUrl + arr.imgurl
 					arr.name = arr.name.replace(exp, "<span style='color:#4AAAFF'>" + e +
 						"</span>")
 					arr.email = arr.email.replace(exp, "<span style='color:#4AAAFF'>" +
@@ -228,7 +228,7 @@
 								})
 							}
 							arr.tip = tip
-							arr.imgurl = this.serverUrl + "/user/" + arr.imgurl
+							arr.imgurl = this.serverUrl + arr.imgurl
 							arr.name = arr.name.replace(exp, "<span style='color:#4AAAFF'>" + e +
 								"</span>")
 							arr.email = arr.email.replace(exp, "<span style='color:#4AAAFF'>" +

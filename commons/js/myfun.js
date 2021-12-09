@@ -105,7 +105,7 @@ export default {
 		now = new Date(now)
 		var told = old.getTime()
 		var tnow = now.getTime()
-		if (told > (tnow + 1000 * 60 * 5)) {
+		if (tnow > (told + 1000 * 60 * 5)) {
 			return now
 		} else {
 			return ''

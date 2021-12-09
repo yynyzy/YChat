@@ -169,7 +169,7 @@
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
-							res.imgurl = this.serverUrl + "/user/" + res.imgurl
+							res.imgurl = this.serverUrl  + res.imgurl
 							if (typeof(res.explain)) {
 								res.explain = '这个人很懒，什么都没留下~'
 							}

@@ -70,7 +70,7 @@
 					const value = uni.getStorageSync('user')
 					if (value) {
 						this.uid = value.id
-						this.imgurl = this.serverUrl + '/user/' + value.imgurl
+						this.imgurl = this.serverUrl + value.imgurl
 						this.token = value.token
 						this.myname = value.name
 
@@ -105,7 +105,7 @@
 						if (status == 200) {
 							let res = data.data.result
 							for (let i = 0; i < res.length; i++) {
-								res[i].imgurl =this.serverUrl+'/user/'+res[i].imgurl
+								res[i].imgurl =this.serverUrl+res[i].imgurl
 								this.getleave(res,i)
 							}
 							this.requester=res

@@ -261,7 +261,7 @@
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
-							this.cropFilePath = this.serverUrl + "/user/" + res.imgurl
+							this.cropFilePath = this.serverUrl + res.imgurl
 							if (res.explain == undefined) {
 								res.explain = '这个人很懒，什么都没留下~'
 							}

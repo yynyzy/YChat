@@ -10,10 +10,9 @@
 				</view>
 			</view>
 			<view class="top-bar-right">
-				<view class="pice">
-				</view>
+				<view class="pice"></view>
 				<view class="group-img" v-if="type == 0" @tap="goGroupHome">
-					<image src="../../static/img/three.png"></image>
+					<image :src="fimgurl"></image>
 				</view>
 			</view>
 		</view>
@@ -27,7 +26,7 @@
 						{{changeTime(item.time)}}
 					</view>
 					<!-- 对方 -->
-					<view class="msg-m msg-left" v-if="item.id !='b'">
+					<view class="msg-m msg-left" v-if="item.fromId !=uid">
 						<image :src="item.imgurl" class="user-img"></image>
 						<view class="message" v-if="item.types==0">
 							<view class="msg-text">
@@ -60,7 +59,7 @@
 						</view>
 					</view>
 					<!-- 我 -->
-					<view class="msg-m msg-right" v-if="item.id =='b'">
+					<view class="msg-m msg-right" v-if="item.fromId ==uid">
 						<image :src="item.imgurl" class="user-img"></image>
 						<view class="message" v-if="item.types==0">
 							<view class="msg-text">
@@ -119,19 +118,25 @@
 				type:'',
 				msgs: [],
 				imgMsg: [],
-				oldTime: new Date(),
+				oldTime: 0,
 				scrollToView: '',
 				inputh: "60",
 				animationData: {},
 				nowpage: 0,
+				pagesize:10,
 				loading: '',
 				isloading: true,
 				beginLoading: true
 			}
 		},
-		onLoad() {
+		onLoad(e) {
+			this.fid =e.id
+			this.fname=e.name
+			this.type =e.type
+			this.fimgurl=e.img
+			this.getStorages()
 			this.getMsg(this.nowpage)
-			this.nextPage()
+			// this.nextPage()
 		},
 		comments: {
 			submit
@@ -142,7 +147,24 @@
 					detail: 1
 				})
 			},
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.imgurl = this.serverUrl+ value.imgurl
+						this.token = value.token
+						this.uname = value.name
 			
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
+					}
+				} catch (e) {
+					console.log(e)
+				}
+			},
 			goGroupHome:function(){
 				uni.navigateTo({
 					url:'../grouphome/grouphome?gid='+this.fid+'&gimg='+this.fimgurl
@@ -188,39 +210,75 @@
 				}
 			},
 			getMsg(page) {
-
-				let msg = datas.message()
-				let maxpages = msg.length
-				if (msg.length > (page + 1) * 10) {
-					maxpages = (page + 1) * 10
-					this.nowpage++
-				} else {
-					this.nowpage = -1
-				}
-				for (var i = page * 10; i < maxpages; i++) {
-					msg[i].imgurl = '../../static/img/' + msg[i].imgurl
-					if (i < msg.length - 1) {
-						let t = myfun.spaceTime(this.oldTime, msg[i].time)
-						if (t) {
-							this.oldTime = t
+				uni.request({
+					url: this.serverUrl + "/chat/msg",
+					data: {
+						uid: this.uid,
+						fid: this.fid,
+						nowPage:this.nowpage,
+						pageSize:this.pagesize,
+						state:1,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						let status = data.data.status
+						if (status == 200) {
+							let msg = data.data.result
+							msg.reverse()
+							if(msg.length>0){
+								let oldtime =msg[0].time
+								let imgarr =[]
+								for (let i = 0; i < msg.length; i++) {
+									msg[i].imgurl =this.serverUrl + msg[i].imgurl
+									if (i < msg.length - 1) {
+										let t = myfun.spaceTime(oldtime, msg[i].time)
+										if (t) {
+											oldtime = t
+										}
+										msg[i].time = t
+									}
+									if(this.nowpage == 0){
+										if(msg[i].time>this.oldTime){
+											this.oldTime=msg[i].time
+										}
+									}
+									if (msg[i].types == 1) {
+										msg[i].message = this.serverUrl + msg[i].message
+										imgarr.push(msg[i].message)
+									}
+								}
+								this.msgs=msg.concat(this.msgs)
+								this.imgMsg=imgarr.concat(this.imgMsg)
+							}
+							if (msg.length ==10) {
+								
+								this.nowpage++
+							} else {
+								this.nowpage = -1
+							}
+							this.$nextTick(function() {
+								let len = this.msgs.length
+								this.scrollToView = 'msg' + this.msgs[msg.length-1].id
+							})
+							clearInterval(this.loading)
+							
+							this.beginLoading = true
+							this.isloading = true
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
 						}
-						msg[i].time = t
 					}
-					if (msg[i].types == 1) {
-						msg[i].message = '../../static/img/' + msg[i].message
-						this.imgMsg.unshift(msg[i].message)
-					}
-					this.msgs.unshift(msg[i])
-				}
-
-				this.$nextTick(function() {
-					let len = this.msgs.length
-					this.scrollToView = 'msg' + this.msgs[maxpages - page * 10 - 1].tip
 				})
-				clearInterval(this.loading)
-
-				this.beginLoading = true
-				this.isloading = true
+				
 			},
 			previewImage(currentUrl) {
 				uni.previewImage({
@@ -250,7 +308,6 @@
 				return (map)
 			},
 			openLocation(e) {
-
 				uni.openLocation({
 					latitude: e.latitude,
 					longitude: e.longitude,
@@ -262,14 +319,23 @@
 				});
 			},
 			inputs(e) {
+				this.receiveMsg(e,this.uid,this.imgurl,0)
+			},
+			receiveMsg(e,id,img,tip) {
 				let len = this.msgs.length
+				let nowTime =new Date()
+				let t  = myfun.spaceTime(this.oldTime,nowTime)
+				if(t){
+					this.oldTime =t
+				}
+				nowTime = t
 				let data = {
-					id: 'b',
-					imgurl: '../../static/img/one.png',
+					fromId: id,
+					imgurl: img,
 					message: e.message,
-					tip: len,
 					types: e.types,
-					time: new Date
+					time: nowTime,
+					id: len,
 				}
 				console.log(e)
 				this.msgs.push(data)
@@ -279,7 +345,22 @@
 				if (e.types == 1) {
 					this.imgMsg.push(e.message)
 				}
+				//socket提交
+				if (e.types == 0) {
+				//发送给后端
+				this.sendSocket(e)
+				}
+			},
+			sendSocket(e){
+				if(this.type ==0){
+					//一对一聊天
+					this.socket.emit('msg',e,this.uid,this.fid)
+				}else{
+					//群聊
+					this.socket.emit('groupMsg',e,this.uid,this.fid)
+				}
 			}
+			
 
 		}
 	}
