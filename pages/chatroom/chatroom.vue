@@ -108,14 +108,14 @@
 	export default {
 		data() {
 			return {
-				uid:'',
-				uimgurl:'',
-				token:'',
-				uname:'',
-				fid:'',
-				fname:'',
-				fimgurl:'',
-				type:'',
+				uid: '',
+				uimgurl: '',
+				token: '',
+				uname: '',
+				fid: '',
+				fname: '',
+				fimgurl: '',
+				type: '',
 				msgs: [],
 				imgMsg: [],
 				oldTime: 0,
@@ -123,17 +123,17 @@
 				inputh: "60",
 				animationData: {},
 				nowpage: 0,
-				pagesize:10,
+				pagesize: 10,
 				loading: '',
 				isloading: true,
 				beginLoading: true
 			}
 		},
 		onLoad(e) {
-			this.fid =e.id
-			this.fname=e.name
-			this.type =e.type
-			this.fimgurl=e.img
+			this.fid = e.id
+			this.fname = e.name
+			this.type = e.type
+			this.fimgurl = e.img
 			this.getStorages()
 			this.getMsg(this.nowpage)
 			// this.nextPage()
@@ -152,10 +152,10 @@
 					const value = uni.getStorageSync('user')
 					if (value) {
 						this.uid = value.id
-						this.imgurl = this.serverUrl+ value.imgurl
+						this.imgurl = this.serverUrl + value.imgurl
 						this.token = value.token
 						this.uname = value.name
-			
+
 					} else {
 						uni.navigateTo({
 							url: '../signin/signin'
@@ -165,9 +165,9 @@
 					console.log(e)
 				}
 			},
-			goGroupHome:function(){
+			goGroupHome: function() {
 				uni.navigateTo({
-					url:'../grouphome/grouphome?gid='+this.fid+'&gimg='+this.fimgurl
+					url: '../grouphome/grouphome?gid=' + this.fid + '&gimg=' + this.fimgurl
 				})
 			},
 			heights(e) {
@@ -215,9 +215,9 @@
 					data: {
 						uid: this.uid,
 						fid: this.fid,
-						nowPage:this.nowpage,
-						pageSize:this.pagesize,
-						state:1,
+						nowPage: this.nowpage,
+						pageSize: this.pagesize,
+						state: 1,
 						token: this.token
 					},
 					method: "POST",
@@ -226,11 +226,11 @@
 						if (status == 200) {
 							let msg = data.data.result
 							msg.reverse()
-							if(msg.length>0){
-								let oldtime =msg[0].time
-								let imgarr =[]
+							if (msg.length > 0) {
+								let oldtime = msg[0].time
+								let imgarr = []
 								for (let i = 0; i < msg.length; i++) {
-									msg[i].imgurl =this.serverUrl + msg[i].imgurl
+									msg[i].imgurl = this.serverUrl + msg[i].imgurl
 									if (i < msg.length - 1) {
 										let t = myfun.spaceTime(oldtime, msg[i].time)
 										if (t) {
@@ -238,9 +238,9 @@
 										}
 										msg[i].time = t
 									}
-									if(this.nowpage == 0){
-										if(msg[i].time>this.oldTime){
-											this.oldTime=msg[i].time
+									if (this.nowpage == 0) {
+										if (msg[i].time > this.oldTime) {
+											this.oldTime = msg[i].time
 										}
 									}
 									if (msg[i].types == 1) {
@@ -248,21 +248,21 @@
 										imgarr.push(msg[i].message)
 									}
 								}
-								this.msgs=msg.concat(this.msgs)
-								this.imgMsg=imgarr.concat(this.imgMsg)
+								this.msgs = msg.concat(this.msgs)
+								this.imgMsg = imgarr.concat(this.imgMsg)
 							}
-							if (msg.length ==10) {
-								
+							if (msg.length == 10) {
+
 								this.nowpage++
 							} else {
 								this.nowpage = -1
 							}
 							this.$nextTick(function() {
 								let len = this.msgs.length
-								this.scrollToView = 'msg' + this.msgs[msg.length-1].id
+								this.scrollToView = 'msg' + this.msgs[msg.length - 1].id
 							})
 							clearInterval(this.loading)
-							
+
 							this.beginLoading = true
 							this.isloading = true
 						} else if (status == 500) {
@@ -278,7 +278,7 @@
 						}
 					}
 				})
-				
+
 			},
 			previewImage(currentUrl) {
 				uni.previewImage({
@@ -319,14 +319,14 @@
 				});
 			},
 			inputs(e) {
-				this.receiveMsg(e,this.uid,this.imgurl,0)
+				this.receiveMsg(e, this.uid, this.imgurl, 0)
 			},
-			receiveMsg(e,id,img,tip) {
+			receiveMsg(e, id, img, tip) {
 				let len = this.msgs.length
-				let nowTime =new Date()
-				let t  = myfun.spaceTime(this.oldTime,nowTime)
-				if(t){
-					this.oldTime =t
+				let nowTime = new Date()
+				let t = myfun.spaceTime(this.oldTime, nowTime)
+				if (t) {
+					this.oldTime = t
 				}
 				nowTime = t
 				let data = {
@@ -337,30 +337,51 @@
 					time: nowTime,
 					id: len,
 				}
-				console.log(e)
 				this.msgs.push(data)
 				this.$nextTick(function() {
 					this.scrollToView = 'msg' + len
 				})
+				//socket提交
+				if (e.types == 0 || e.types ==1) {
+					//发送给后端
+					this.sendSocket(e)
+				}
 				if (e.types == 1) {
 					this.imgMsg.push(e.message)
+					let dirurl = myfun.fileName(new Date())
+					console.log(dirurl)
+					const uploadTask = uni.uploadFile({
+						url: this.serverUrl + '/files/upload',
+						filePath: e.message,
+						name: 'file',
+						formData: {
+							url: dirurl,
+							name: new Date().getTime() + this.uid + Math.ceil(Math.random() * 10)
+						},
+						success: (uploadFileRes) => {
+
+							let data = {
+								message: uploadFileRes,
+								types: 1
+							}
+							this.sendSocket(data)
+						},
+
+					});
 				}
-				//socket提交
-				if (e.types == 0) {
-				//发送给后端
-				this.sendSocket(e)
-				}
+
 			},
-			sendSocket(e){
-				if(this.type ==0){
+			sendSocket(e) {
+				if (this.type == 0) {
 					//一对一聊天
-					this.socket.emit('msg',e,this.uid,this.fid)
-				}else{
+					this.socket.emit('msg', e, this.uid, this.fid)
+				} else {
 					//群聊
-					this.socket.emit('groupMsg',e,this.uid,this.fid)
+					this.socket.emit('groupMsg', e, this.uid, this.fid)
+
 				}
 			}
-			
+
 
 		}
 	}
