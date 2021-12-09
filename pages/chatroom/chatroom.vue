@@ -135,7 +135,8 @@
 			this.type = e.type
 			this.fimgurl = e.img
 			this.getStorages()
-			this.getMsg(this.nowpage)
+			this.getMsg()
+			this.receiveSocketMsg()
 			// this.nextPage()
 		},
 		comments: {
@@ -175,7 +176,6 @@
 				this.goBottom()
 			},
 			goBottom() {
-				console.log(1)
 				this.scrollToView = ""
 				this.$nextTick(function() {
 					let len = this.msgs.length - 1
@@ -209,7 +209,7 @@
 					}.bind(this), 200)
 				}
 			},
-			getMsg(page) {
+			getMsg() {
 				uni.request({
 					url: this.serverUrl + "/chat/msg",
 					data: {
@@ -342,14 +342,13 @@
 					this.scrollToView = 'msg' + len
 				})
 				//socket提交
-				if (e.types == 0 || e.types ==1) {
+				if (e.types == 0 || e.types ==3) {
 					//发送给后端
 					this.sendSocket(e)
 				}
 				if (e.types == 1) {
 					this.imgMsg.push(e.message)
 					let dirurl = myfun.fileName(new Date())
-					console.log(dirurl)
 					const uploadTask = uni.uploadFile({
 						url: this.serverUrl + '/files/upload',
 						filePath: e.message,
@@ -361,8 +360,8 @@
 						success: (uploadFileRes) => {
 
 							let data = {
-								message: uploadFileRes,
-								types: 1
+								message: uploadFileRes.data,
+								types: e.types
 							}
 							this.sendSocket(data)
 						},
@@ -380,6 +379,41 @@
 					this.socket.emit('groupMsg', e, this.uid, this.fid)
 
 				}
+			},
+			receiveSocketMsg(){
+				this.socket.on('backmsg',(msg,fromId)=>{
+					if(fromId == this.fid){
+						console.log(msg,fromId)
+						let len = this.msgs.length
+						let nowTime = new Date()
+						let t = myfun.spaceTime(this.oldTime, nowTime)
+						if (t) {
+							this.oldTime = t
+						}
+						if(msg.types == 1 || msg.types==2){
+							msg.message = this.serverUrl+msg.message
+						}
+						
+						nowTime = t
+						let data = {
+							fromId: fromId,
+							imgurl: this.fimgurl,
+							message: msg.message,
+							types: msg.types,
+							time: nowTime,
+							id: len,
+						}
+						this.msgs.push(data)
+						console.log(this.msgs)
+						if(msg.types==1){
+							this.imgMsg.push(msg.message)
+						}
+					}else{
+						
+					}
+					
+				})
+				
 			}
 
 
@@ -390,6 +424,9 @@
 <style lang="scss">
 	@import "../../commons/css/mycss.scss";
 
+		.top-bar-center {
+			z-index: -100;
+		}
 	page {
 		height: 100%;
 	}
