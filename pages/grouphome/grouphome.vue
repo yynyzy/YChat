@@ -12,6 +12,18 @@
 				</view>
 			</view>
 		</view>
+		<view class="top-bar bgbar" :animation="animationData">
+			<view class="top-bar-left" @tap="backOne">
+				<image src="../../static/common/back.png" class="back-img"></image>
+			</view>
+			<view class="top-bar-center">
+			</view>
+			<view class="top-bar-right">
+				<view class="more-img">
+					<image src="../../static/group/more.png"></image>
+				</view>
+			</view>
+		</view>
 		<view class="bg">
 			<image :src="gimg" class="bg-img" mode="aspectFill"></image>
 		</view>
@@ -48,6 +60,64 @@
 						</view>
 						<view class="clear"></view>
 					</view>
+					<view class="mitem">
+						<view class="row">
+							<view class="title">
+								群名称
+							</view>
+							<view class="cont">
+								今天天气真好
+							</view>
+							<view class="more">
+								<image src="../../static/common/more.png" mode="aspectFill"></image>
+							</view>
+						</view>
+						<view class="row">
+							<view class="title">
+								群头像
+							</view>
+							<view class="cont">
+								<image :src="gimg" class="group-img" mode="aspectFill"></image>
+							</view>
+							<view class="more">
+								<image src="../../static/common/more.png" mode="aspectFill"></image>
+							</view>
+						</view>
+						<view class="row">
+							<view class="title">
+								群公告
+							</view>
+							<view class="cont">
+								今天天气真好
+							</view>
+							<view class="more">
+								<image src="../../static/common/more.png" mode="aspectFill"></image>
+							</view>
+						</view>
+						<view class="row">
+							<view class="title">
+								群内名
+							</view>
+							<view class="cont">
+								今天天气真好
+							</view>
+							<view class="more">
+								<image src="../../static/common/more.png" mode="aspectFill"></image>
+							</view>
+						</view>
+						<view class="row">
+							<view class="title">
+								群消息免纷扰
+							</view>
+							<view class="cont"></view>
+							<view class="more">
+								<switch :checked="swit" @change="switchChange"   class="switch"/>
+							</view>
+						</view>
+					</view>
+					<view class="bt2">
+						解散群
+					</view>
 				</view>
 			</view>
 		</view>
@@ -64,13 +134,20 @@
 				token: '',
 				gimg: "",
 				gid: "",
-				groupmember: []
+				groupmember: [],
+				swit:false,
+				top:0,
+				animationData: {},
 			}
 		},
 		onLoad(e) {
 			this.gid = e.gid;
 			this.gimg = e.gimg;
 			this.getMember()
+		},
+		onReady() {
+			this.getTop()
+			this.addAnimation()
 		},
 		methods: {
 			backOne() {
@@ -96,6 +173,9 @@
 					console.log(e)
 				}
 			},
+			switchChange(){
+				
+			},
 			//获取群成员
 			getMember: function() {
 				let members = datas.getFrinedLists()
@@ -103,6 +183,32 @@
 					members[i].imgurl = "../../static/img/" + members[i].imgurl
 					this.groupmember.push(members[i])
 				}
+			},
+			getTop() {
+				const query = uni.createSelectorQuery().in(this);
+				query.select('.main-inner').boundingClientRect(data => {
+					this.top =data.top
+					
+					
+					
+				}).exec();
+			},
+			addAnimation() {
+				this.isAdd = !this.isAdd
+				var animation = uni.createAnimation({
+					duration: 300,
+					timingFunction: "linear"
+				})
+				if (this.top<60) {
+					animation.opacity(1).step()
+				} else {
+					animation.opacity(0).step()
+				}
+				this.animationData = animation.export()
+			},
+			onPageScroll(){
+				this.getTop()
+				this.addAnimation()
 			}
 		}
 	}
@@ -113,6 +219,9 @@
 
 	.clear {
 		clear: both
+	}
+	.bgbar{
+		background-color: #fff;
 	}
 
 	.top-bar-center {
@@ -257,7 +366,8 @@
 						-webkit-line-clamp: 1;
 						overflow: hidden;
 					}
-					.user-add{
+
+					.user-add {
 						width: 104rpx;
 						height: 104rpx;
 						padding: 32rpx;
@@ -267,6 +377,85 @@
 			}
 
 
+		}
+
+		.mitem {
+
+			.row {
+				display: flex;
+				flex-direction: row;
+			}
+
+			.title {
+				flex: none;
+				padding: 0 $uni-spacing-col-base;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color;
+				line-height: 112rpx;
+			}
+
+			.head {
+				height: 148rpx;
+				display: flex;
+				align-items: center;
+			}
+
+			.user-head {
+				flex: auto;
+			}
+
+			.user-img {
+				margin-top: 22rpx;
+				width: $uni-img-size-lg;
+				height: $uni-img-size-lg;
+				border-radius: $uni-border-radius-base;
+			}
+
+			.cont {
+
+				flex: auto;
+				font-size: $uni-font-size-lg;
+				color: $uni-text-color-grey;
+				line-height: 112rpx;
+				height: 112rpx;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.group-img{
+				width: 80rpx;
+				height: 80rpx;
+				border-radius: 20rpx;
+				margin: 16rpx;
+			}
+
+			.more {
+				flex: none;
+				height: 112rpx;
+				display: flex;
+				align-items: center;
+				margin-right: 10rpx;
+
+				image {
+					width: 28rpx;
+					height: 28rpx;
+				}
+
+			}
+			.switch{
+				margin-right: 22rpx;
+				color:rgba(255,228,49,1)
+			}
+
+			
+		}
+		.bt2 {
+			margin-top: 80rpx;
+			text-align: center;
+			font-size: $uni-font-size-lg;
+			color: $uni-color-warning;
+			line-height: 88rpx;
+			padding-bottom: env(safe-area-inset-bottom);
 		}
 	}
 </style>

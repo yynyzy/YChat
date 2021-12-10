@@ -48,7 +48,7 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn btn1" :class="{noselecte:selec}" @tap="submit">
+			<view class="bottom-btn btn1" :class="{noselecte:!selec}" @tap="submit">
 				创建（{{selectedn}}）
 			</view>
 		</view>
@@ -65,101 +65,22 @@
 			return {
 				tempFilePath: '',
 				cropFilePath: "../../static/group/group.png",
-				user: [{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					}, {
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: true,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					},
-					{
-						selected: false,
-						imgurl: '../../static/img/one.png',
-						name: '这里哪里'
-					}
-				],
 				selectedn: 0,
-				name:'',
+				name: '',
 				uid: "",
 				token: "",
-				gimgurl:"/group/group.png",
+				gimgurl: "/group/group.png",
 				friends: [],
+				user: []
 			}
 		},
 		computed: {
 			selec() {
-				if (this.selectedn > 0&& this.name.length>0) {
-					
-					return false
+				if (this.selectedn) {
+					return true
+
 				} else {
-				return true
+					return false
 				}
 
 			}
@@ -181,7 +102,7 @@
 					if (value) {
 						this.uid = value.id
 						this.token = value.token
-					
+
 					} else {
 						uni.navigateTo({
 							url: '../signin/signin'
@@ -191,7 +112,7 @@
 					console.log(e)
 				}
 			},
-			
+
 			upload() {
 				uni.chooseImage({
 					count: 1, //默认9
@@ -246,15 +167,14 @@
 								this.noone = false
 								for (let i = 0; i < res.length; i++) {
 									res[i].imgurl = this.serverUrl + res[i].imgurl
-									res[i].selected=false
+									res[i].selected = false
 									if (res[i].markname) {
 										res[i].name = res[i].markname
 									}
 									this.friends.push(res[i])
 								}
-								console.log(this.friends)
 							} else {
-								
+
 							}
 						} else if (status == 500) {
 							uni.showToast({
@@ -286,52 +206,45 @@
 					}
 				}
 			},
-			submit(){
-				if(this.selec && this.name.length>0){
-				uni.request({
-					url: this.serverUrl + "/group/creategroup",
-					data: {
-						uid: this.uid,
-						token: this.token,
-						name:this.name,
-						imgurl:this.gimgurl
-					},
-					method: "POST",
-					success: data => {
-						this.refresh = true
-						let status = data.data.status
-						if (status == 200) {
-							let res = data.data.result
-							if (res.length > 0) {
-								this.noone = false
-								for (let i = 0; i < res.length; i++) {
-									res[i].imgurl = this.serverUrl + res[i].imgurl
-									if (res[i].markname) {
-										res[i].name = res[i].markname
-									}
-									this.friends.push(res[i])
-								}
-								this.friends = myfun.paixu(this.friends, 'lastTime', 0)
-								for (let i = 0; i < this.friends.length; i++) {
-									this.getLastMsg(this.friends, i)
-									this.getUnread(this.friends, i)
-								}
-							} else {
-								this.noone = true
-							}
-						} else if (status == 500) {
-							uni.showToast({
-								title: '服务器出错了',
-								icon: 'none',
-								duration: 1500
-							})
-						} else if (status == 300) {
-							uni.navigateTo({
-								url: '../login/login'
-							})
-						}
+			submit() {
+				if (this.selec && this.name.length > 0) {
+
+					for (let i = 0; i < this.friends.length; i++) {
+						this.user.push(this.friends[i].id)
 					}
-				})
+					console.log(this.user)
+					uni.request({
+						url: this.serverUrl + "/group/createGroup",
+						data: {
+							uid: this.uid,
+							token: this.token,
+							name: this.name,
+							imgurl: this.gimgurl,
+							user: this.user
+						},
+						method: "POST",
+						success: data => {
+							this.refresh = true
+							let status = data.data.status
+							if (status == 200) {
+								let res = data.data.result
+								console.log(res)
+								uni.navigateTo({
+									url: '../index/index'
+								})
+							} else if (status == 500) {
+								uni.showToast({
+									title: '服务器出错了',
+									icon: 'none',
+									duration: 1500
+								})
+							} else if (status == 300) {
+								uni.navigateTo({
+									url: '../login/login'
+								})
+							}
+						}
+					})
 				}
 			}
 
@@ -345,6 +258,7 @@
 	.top-bar {
 		background: rgba(255, 255, 255, 1);
 		border-bottom: 1px solid $uni-border-color;
+
 		.top-bar-center {
 			z-index: -100;
 		}
