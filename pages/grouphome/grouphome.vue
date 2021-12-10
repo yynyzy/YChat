@@ -7,7 +7,9 @@
 			<view class="top-bar-center">
 			</view>
 			<view class="top-bar-right">
-				<image src="../../static/group/more1.png"></image>
+				<view class="more-img">
+					<image src="../../static/group/more1.png"></image>
+				</view>
 			</view>
 		</view>
 		<view class="bg">
@@ -26,6 +28,26 @@
 						<view class="more">管理群成员</view>
 						<image src="../../static/common/more.png" mode="aspectFill" class="more-img"></image>
 					</view>
+					<view class="member-ls">
+						<view class="member-li" v-for="(item,index) in groupmember" :key="index">
+							<view class="imgs">
+								<image src="../../static/group/delete.png" mode="aspectFill" class="delete"></image>
+								<image :src="item.imgurl" mode="aspectFill" class="user-img"></image>
+							</view>
+							<view class="name">
+								{{item.name}}
+							</view>
+						</view>
+						<view class="member-li">
+							<view class="imgs">
+								<image src="../../static/group/add.png" mode="aspectFill" class="user-add"></image>
+							</view>
+							<view class="name">
+								邀请
+							</view>
+						</view>
+						<view class="clear"></view>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -38,16 +60,16 @@
 		data() {
 			return {
 				uid: '',
-				gid:"",
+				gid: "",
 				token: '',
 				gimg: "",
 				gid: "",
-				groupmember:[]
+				groupmember: []
 			}
 		},
 		onLoad(e) {
-			this.gid =e.gid;
-			this.gimg=e.gimg;
+			this.gid = e.gid;
+			this.gimg = e.gimg;
 			this.getMember()
 		},
 		methods: {
@@ -75,28 +97,23 @@
 				}
 			},
 			//获取群成员
-			getMember:function(){
-				let members =datas.getFrinedLists()
-				for(let i =0;i<members.length;i++){
-					members[i].imgurl="../../static/img/"+members[i].imgurl
+			getMember: function() {
+				let members = datas.getFrinedLists()
+				for (let i = 0; i < members.length; i++) {
+					members[i].imgurl = "../../static/img/" + members[i].imgurl
 					this.groupmember.push(members[i])
 				}
 			}
 		}
 	}
-	
-	let a =[
-		{id:{},name:"item1"},
-		{id:5,name: "item2"},
-		{id:"2",name:"item3"},
-		{id:3,name:"item4"},
-		{id:1,name:"item5"},
-	]
-	console.log(a)
 </script>
 
 <style lang="scss">
 	@import "../../commons/css/mycss.scss";
+
+	.clear {
+		clear: both
+	}
 
 	.top-bar-center {
 		z-index: -100;
@@ -122,6 +139,7 @@
 
 		.main-inner {
 			width: 100%;
+			min-height: 720rpx;
 			background-color: #fff;
 			border-radius: 40rpx 40rpx 0 0;
 
@@ -187,10 +205,68 @@
 					font-weight: 400;
 					color: rgba(39, 40, 50, 0.6);
 				}
-				.more-img{
-					
+
+				.more-img {
+					width: 16rpx;
+					height: 28rpx;
 				}
 			}
+
+			.member-ls {
+				width: 100%;
+				padding: 20rpx 16rpx;
+				box-sizing: border-box;
+
+				.member-li {
+					padding-bottom: 32rpx;
+					width: 20%;
+					float: left;
+					text-align: center;
+
+					.imgs {
+						position: relative;
+						display: inline-block;
+						width: 104rpx;
+						height: 104rpx;
+						border-radius: 20rpx;
+						background-color: $uni-color-primary;
+					}
+
+					.user-img {
+						width: 104rpx;
+						height: 104rpx;
+						border-radius: 20rpx;
+					}
+
+					.delete {
+						width: 40rpx;
+						height: 40rpx;
+						position: absolute;
+						top: -16rpx;
+						right: -16rpx;
+						z-index: 10;
+					}
+
+					.name {
+						padding: 0 8rpx;
+						font-size: 28rpx;
+						color: #272832;
+						line-height: 40rpx;
+						display: -webkit-box;
+						-webkit-box-orient: vertical;
+						-webkit-line-clamp: 1;
+						overflow: hidden;
+					}
+					.user-add{
+						width: 104rpx;
+						height: 104rpx;
+						padding: 32rpx;
+						box-sizing: border-box;
+					}
+				}
+			}
+
+
 		}
 	}
 </style>

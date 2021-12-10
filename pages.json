@@ -82,7 +82,8 @@
             "path" : "pages/grouphome/grouphome",
             "style" :                                                                                    
             {
-                "navigationStyle": "custom"
+                "navigationStyle": "custom",
+				"enablePullDownRefresh": false
             }
             
         }

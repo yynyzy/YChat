@@ -11,7 +11,6 @@
 			</view>
 			<view class="top-bar-right">
 				<view class="pice">
-
 				</view>
 			</view>
 		</view>
