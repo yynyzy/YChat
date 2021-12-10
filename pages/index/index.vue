@@ -89,7 +89,7 @@
 			this.friendRequest()
 			this.getFriends()
 			this.join(this.uid)
-			this.receiveSocketMsg() 
+			this.receiveSocketMsg()
 		},
 		onPullDownRefresh() {
 			// this.refresh=false
@@ -139,12 +139,10 @@
 					},
 					method: "POST",
 					success: data => {
-						console.log(data)
 						this.refresh = true
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
-							console.log(res)
 							if (res.length > 0) {
 								this.noone = false
 								for (let i = 0; i < res.length; i++) {
@@ -356,29 +354,30 @@
 			},
 
 			receiveSocketMsg() {
-				this.socket.on('backmsg', (msg, fromId) => {
-								let nmsg =''
-					if(msg.types==0){
-						nmsg =msg.message
-					}else if(msg.types==1){
-						nmsg='【图片】'
-					}else if(msg.types==2){
-						nmsg='【语音】'
-					}else if(msg.types==3){
-						nmsg='【地图】'
+				this.socket.on('backmsg', (msg, fromId, tip) => {
+					let nmsg = ''
+					if (msg.types == 0) {
+						nmsg = msg.message
+					} else if (msg.types == 1) {
+						nmsg = '【图片】'
+					} else if (msg.types == 2) {
+						nmsg = '【语音】'
+					} else if (msg.types == 3) {
+						nmsg = '【地图】'
 					}
-					
-					
-					for(let i =0;i<this.friends.length;i++){
-						if(this.friends[i].id == fromId){
-							let e =this.friends[i]
-							e.lastTime=new Date()
-							e.msg =nmsg
-							this.friends[i].splice(i, 1)
-							this.friends[i].unshift(e)
+
+					for (let i = 0; i < this.friends.length; i++) {
+						if (this.friends[i].id == fromId) {
+							let e = this.friends[i]
+							e.lastTime = new Date()
+							e.msg = nmsg
+							e.tip++
+							this.friends.splice(i, 1)
+							this.friends.unshift(e)
 						}
 					}
-					
+					console.log(this.friends)
+
 				})
 
 			}

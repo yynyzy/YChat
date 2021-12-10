@@ -21,7 +21,7 @@
 				<view class="loading" :class="{displaynone:isloading}">
 					<image src="../../static/common/loading.png" class="loading-img" :animation="animationData"></image>
 				</view>
-				<view class="chat-ls" v-for="(item,index) in msgs" :key="index" :id="'msg'+ item.tip">
+				<view class="chat-ls" v-for="(item,index) in msgs" :key="index" :id="'msg'+ item.id">
 					<view class="chat-time" v-if="item.time !==''">
 						{{changeTime(item.time)}}
 					</view>
@@ -179,7 +179,7 @@
 				this.scrollToView = ""
 				this.$nextTick(function() {
 					let len = this.msgs.length - 1
-					this.scrollToView = 'msg' + this.msgs[len].tip
+					this.scrollToView = 'msg' + this.msgs[len].id
 				})
 			},
 			changeTime(date) {
@@ -381,8 +381,8 @@
 				}
 			},
 			receiveSocketMsg(){
-				this.socket.on('backmsg',(msg,fromId)=>{
-					if(fromId == this.fid){
+				this.socket.on('backmsg',(msg,fromId,tip)=>{
+					if(fromId == this.fid &&tip==0){
 						console.log(msg,fromId)
 						let len = this.msgs.length
 						let nowTime = new Date()
