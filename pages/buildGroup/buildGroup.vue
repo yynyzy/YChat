@@ -2,7 +2,7 @@
 	<view class="content">
 		<view class="top-bar">
 			<view class="top-bar-left" @tap="backOne">
-				<view class="text" @tap="back">
+				<view class="text">
 					取消
 				</view>
 			</view>
@@ -36,7 +36,7 @@
 			</view>
 			<view class="friends">
 
-				<view class="user" v-for="(item,index) in user" :key="index" @tap="selectFriend(index)">
+				<view class="user" v-for="(item,index) in friends" :key="index" @tap="selectFriend(index)">
 					<view class="selected" :class="{isselected:item.selected}">
 						<image src="../../static/group/choose.png" v-if="item.selected" class="selected-img"></image>
 					</view>
@@ -48,7 +48,7 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn btn1" :class="{noselecte:selec}">
+			<view class="bottom-btn btn1" :class="{noselecte:selec}" @tap="submit">
 				创建（{{selectedn}}）
 			</view>
 		</view>
@@ -146,7 +146,11 @@
 					}
 				],
 				selectedn: 0,
-				name:''
+				name:'',
+				uid: "",
+				token: "",
+				gimgurl:"/group/group.png",
+				friends: [],
 			}
 		},
 		computed: {
@@ -162,15 +166,32 @@
 		},
 		onLoad() {
 			this.selectedNumber()
+			this.getStorages()
+			this.getFriends()
 		},
 		methods: {
-			selectedNumber() {
-				for (let i = 0; i < this.user.length; i++) {
-					if (this.user[i].selected) {
-						this.selectedn++
+			backOne() {
+				uni.navigateBack({
+					detail: 1
+				})
+			},
+			getStorages: function() {
+				try {
+					const value = uni.getStorageSync('user')
+					if (value) {
+						this.uid = value.id
+						this.token = value.token
+					
+					} else {
+						uni.navigateTo({
+							url: '../signin/signin'
+						})
 					}
+				} catch (e) {
+					console.log(e)
 				}
 			},
+			
 			upload() {
 				uni.chooseImage({
 					count: 1, //默认9
@@ -185,14 +206,19 @@
 				this.tempFilePath = "";
 				this.cropFilePath = e.detail.tempFilePath;
 				uni.uploadFile({
-					url: "后端地址上传图片接口地址",
+					url: this.serverUrl + "/files/upload",
 					filePath: this.cropFilePath,
 					name: "file",
 					fileType: "image",
-					//formData:{},传递参数
+					formData: {
+						url: 'group',
+						name: this.uid,
+						token: this.token
+					},
 					success: (uploadFileRes) => {
 						var backstr = uploadFileRes.data;
 						//自定义操作
+						this.gimgurl = backstr
 					},
 					fail(e) {
 						console.log("this is errormes " + e.message);
@@ -202,13 +228,110 @@
 			cancel() {
 				console.log('cancel')
 			},
+			getFriends: function() {
+				uni.request({
+					url: this.serverUrl + "/index/getFriend",
+					data: {
+						uid: this.uid,
+						state: 0,
+						token: this.token
+					},
+					method: "POST",
+					success: data => {
+						this.refresh = true
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							if (res.length > 0) {
+								this.noone = false
+								for (let i = 0; i < res.length; i++) {
+									res[i].imgurl = this.serverUrl + res[i].imgurl
+									res[i].selected=false
+									if (res[i].markname) {
+										res[i].name = res[i].markname
+									}
+									this.friends.push(res[i])
+								}
+								console.log(this.friends)
+							} else {
+								
+							}
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
+			},
 			selectFriend(e) {
-				if (this.user[e].selected) {
-					this.user[e].selected = false
+				if (this.friends[e].selected) {
+					this.friends[e].selected = false
 					this.selectedn--
 				} else {
-					this.user[e].selected = true
+					this.friends[e].selected = true
 					this.selectedn++
+				}
+			},
+			selectedNumber() {
+				for (let i = 0; i < this.friends.length; i++) {
+					if (this.friends[i].selected) {
+						this.selectedn++
+					}
+				}
+			},
+			submit(){
+				if(this.selec && this.name.length>0){
+				uni.request({
+					url: this.serverUrl + "/group/creategroup",
+					data: {
+						uid: this.uid,
+						token: this.token,
+						name:this.name,
+						imgurl:this.gimgurl
+					},
+					method: "POST",
+					success: data => {
+						this.refresh = true
+						let status = data.data.status
+						if (status == 200) {
+							let res = data.data.result
+							if (res.length > 0) {
+								this.noone = false
+								for (let i = 0; i < res.length; i++) {
+									res[i].imgurl = this.serverUrl + res[i].imgurl
+									if (res[i].markname) {
+										res[i].name = res[i].markname
+									}
+									this.friends.push(res[i])
+								}
+								this.friends = myfun.paixu(this.friends, 'lastTime', 0)
+								for (let i = 0; i < this.friends.length; i++) {
+									this.getLastMsg(this.friends, i)
+									this.getUnread(this.friends, i)
+								}
+							} else {
+								this.noone = true
+							}
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了',
+								icon: 'none',
+								duration: 1500
+							})
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../login/login'
+							})
+						}
+					}
+				})
 				}
 			}
 
@@ -222,6 +345,9 @@
 	.top-bar {
 		background: rgba(255, 255, 255, 1);
 		border-bottom: 1px solid $uni-border-color;
+		.top-bar-center {
+			z-index: -100;
+		}
 	}
 
 	.main {
@@ -329,6 +455,7 @@
 					width: 80rpx;
 					height: 80rpx;
 					border-radius: $uni-border-radius-base;
+					background: rgba(255, 228, 49, 1);
 				}
 
 				.name {
