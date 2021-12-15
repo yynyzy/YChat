@@ -74,6 +74,7 @@
 		data() {
 			return {
 				friends: [],
+				groups:[],
 				imgurl: '',
 				uid: '',
 				token: '',
@@ -89,7 +90,8 @@
 			this.friendRequest()
 			this.getFriends()
 			this.join(this.uid)
-			this.receiveSocketMsg()
+			this.receiveSocketMsg(),
+			this.getGroup()
 		},
 		onPullDownRefresh() {
 			// this.refresh=false
@@ -153,10 +155,6 @@
 									this.friends.push(res[i])
 								}
 								this.friends = myfun.paixu(this.friends, 'lastTime', 0)
-								for (let i = 0; i < this.friends.length; i++) {
-									this.getLastMsg(this.friends, i)
-									this.getUnread(this.friends, i)
-								}
 							} else {
 								this.noone = true
 							}
@@ -232,24 +230,16 @@
 						let status = data.data.status
 						if (status == 200) {
 							let res = data.data.result
-							console.log(res)
 							if (res.length > 0) {
-								this.noone = false
 								for (let i = 0; i < res.length; i++) {
 									res[i].imgurl = this.serverUrl + res[i].imgurl
 									if (res[i].markname) {
 										res[i].name = res[i].markname
 									}
-									this.friends.push(res[i])
+									this.groups.push(res[i])
 								}
-								this.friends = myfun.paixu(this.friends, 'lastTime', 0)
-								for (let i = 0; i < this.friends.length; i++) {
-									this.getLastMsg(this.friends, i)
-									this.getUnread(this.friends, i)
-								}
-							} else {
-								this.noone = true
-							}
+								// this.friends = myfun.paixu(this.friends, 'lastTime', 0)
+							} 
 						} else if (status == 500) {
 							uni.showToast({
 								title: '服务器出错了	getGroup',
