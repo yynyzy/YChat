@@ -373,7 +373,7 @@
 			sendSocket(e) {
 				if (this.type == 0) {
 					//一对一聊天
-					this.socket.emit('msg', e, this.uid, this.fid)
+					this.emit('msg', e, this.uid, this.fid)
 				} else {
 					//群聊
 					this.socket.emit('groupMsg', e, this.uid, this.fid)
